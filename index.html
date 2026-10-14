@@ -480,7 +480,7 @@ function updatePrepTabAttention(){
 function renderPrepList(){
  const result=$('prepResult');
  const bookings=(data.reservations||[]).filter(r=>!isPastReservation(r)).slice().sort((a,b)=>String(a.date).localeCompare(String(b.date))||String(a.place||'').localeCompare(String(b.place||''),'ja')||String(a.id).localeCompare(String(b.id)));
- if(!bookings.length){result.innerHTML='<div class="empty">使用日が今日以降の予約はありません。</div>';return}
+ if(!bookings.length){result.innerHTML='<div class="empty" role="status">用意する材料はありません。</div>';return}
  const allocation=preparationAllocation();
  const done=bookings.filter(r=>data.preparedReservations[r.id]).length;
  let html=`<p><strong>全現場の材料用意</strong>　用意済み ${done} / ${bookings.length} 件</p>`;
