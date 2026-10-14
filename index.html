@@ -387,7 +387,23 @@ function showSelectedItem(item){
  $('search').value='';
  render();
 }
-$('categoryFilter').addEventListener('change',()=>{$('densityFilter').value='';$('colorFilter').value='';$('finishFilter').value='';$('thicknessFilter').value='';$('meshColor').value='';$('meshGauge').value='';$('meshRoll').value='';$('search').value='';render();});
+// 在庫一覧の段階選択を先に表示する（後続の在庫描画でエラーがあっても選択欄を隠さない）。
+function syncInventoryFilterSteps(){
+ const group=$('categoryFilter').value;
+ const density=$('densityFilter').value,finish=$('finishFilter').value;
+ const meshColor=$('meshColor').value,meshGauge=$('meshGauge').value;
+ $('densityFilterWrap').hidden=!['GW','断熱マット','AG断熱マット'].includes(group);
+ $('finishFilterWrap').hidden=!(group==='RW'||(group==='GW'&&density));
+ $('thicknessFilterWrap').hidden=!(group==='GW'||group==='RW')||!finish;
+ $('meshColorWrap').hidden=group!=='金網（カラー金網）';
+ $('meshGaugeWrap').hidden=group!=='金網（カラー金網）'||!meshColor||meshColor==='金網';
+ $('meshRollWrap').hidden=group!=='金網（カラー金網）'||!meshColor||(meshColor!=='金網'&&!meshGauge);
+ $('colorFilterWrap').hidden=!['ジャケット','エルボ'].includes(group);
+}
+$('categoryFilter').addEventListener('input',syncInventoryFilterSteps);
+$('densityFilter').addEventListener('input',syncInventoryFilterSteps);
+$('finishFilter').addEventListener('input',syncInventoryFilterSteps);
+$('categoryFilter').addEventListener('change',()=>{syncInventoryFilterSteps();$('densityFilter').value='';$('colorFilter').value='';$('finishFilter').value='';$('thicknessFilter').value='';$('meshColor').value='';$('meshGauge').value='';$('meshRoll').value='';$('search').value='';render();});
 $('densityFilter').addEventListener('change',()=>{$('finishFilter').value='';$('thicknessFilter').value='';$('search').value='';render();});
 $('finishFilter').addEventListener('change',()=>{$('thicknessFilter').value='';$('search').value='';render();});
 $('thicknessFilter').addEventListener('change',()=>{$('search').value='';render();});
