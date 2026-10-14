@@ -630,6 +630,8 @@ function renderOutstandingOrderDetails(){
 }
 
 ['closeOrders','closeOrdersTop'].forEach(id=>$(id).addEventListener('click',()=>{$('orderDetails').hidden=true;$('orderAlert').scrollIntoView({block:'start'});}));
+// 在庫一覧タブでも「一覧に戻る」と同じく発注詳細を閉じる。
+document.querySelector('[data-tab="stock"]').addEventListener('click',()=>{if(!$('orderDetails').hidden){$('orderDetails').hidden=true;$('orderAlert').scrollIntoView({block:'start'});}});
 function isManualItem(i){return i.userCreated===true || (/^\\d{13,}[0-9a-f]+$/i.test(String(i.id||'')) && i.userCreated!==false)}
 function renderCustomItems(){
  const list=$('customItemList');
