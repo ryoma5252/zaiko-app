@@ -477,7 +477,15 @@ function archiveExpiredWork(){
   const item=data.items.find(i=>i.id===r.itemId),site=String(r.place||'').trim();
   const orderKey=siteOrderKey(site,r.itemId),part=allocations[r.id]||{stock:0,order:Number(r.qty)||0};
   const orderRecord=data.orderedSiteItems[orderKey];
-  data.expiredWorkHistory[r.id]={date:r.date,site,person:r.person||'',name:item?.name||'削除された品目',spec:item?.spec||'',unit:item?.unit||'',qty:Number(r.qty)||0,stock:part.stock,order:part.order,prepared:!!data.preparedReservations[r.id],ordered:part.order<=0?null:(orderRecord!==undefined&&Number(orderRecord)>0),archivedAt:new Date().toISOString()};
+  const qty=Number(r.qty)||0;
+  // One-time automatic stock deduction for newly expired reservations.
+  // Existing archived reservations are skipped to avoid retroactive double deductions.
+  const deducted=!!item&&qty>0;
+  if(deducted){
+   item.qty=Math.round((Number(item.qty||0)-qty)*1000000)/1000000;
+   data.history.push({time:Date.now(),type:'out',itemId:item.id,name:item.name,qty,person:r.person||'',note:'使用日・積載日経過による自動出庫（'+site+' / '+r.date+'）',unit:item.unit,automaticReservationId:r.id});
+  }
+  data.expiredWorkHistory[r.id]={date:r.date,site,person:r.person||'',name:item?.name||'削除された品目',spec:item?.spec||'',unit:item?.unit||'',qty,stock:part.stock,order:part.order,prepared:!!data.preparedReservations[r.id],ordered:part.order<=0?null:(orderRecord!==undefined&&Number(orderRecord)>0),archivedAt:new Date().toISOString(),autoDeducted:deducted};
   changed=true;
  }
  if(changed)try{localStorage.setItem(KEY,JSON.stringify(data))}catch(e){}
