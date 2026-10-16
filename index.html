@@ -4,31 +4,35 @@
 <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#173b57"><title>会社の在庫管理</title>
 <style>
-:root{--navy:#173b57;--blue:#23658a;--bg:#f3f6f8;--line:#dce4ea;--text:#1d2933;--muted:#657582;--green:#147d55;--red:#b43c3c}*{box-sizing:border-box}body{margin:0;font-family:system-ui,-apple-system,"Noto Sans JP",sans-serif;background:var(--bg);color:var(--text)}header{background:var(--navy);color:#fff;padding:18px 16px 14px;position:sticky;top:0;z-index:3}header h1{font-size:20px;margin:0 0 4px}header p{margin:0;font-size:12px;opacity:.85}.wrap{max-width:760px;margin:auto;padding:14px 12px 36px}.tabs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px;margin-bottom:14px}.tabs .tab[data-tab="reserve"],.tabs .tab[data-tab="reserved"]{min-width:0}.tab{min-width:0;width:100%;min-height:46px;border:1px solid var(--line);background:#fff;border-radius:10px;padding:11px 5px;font-weight:700;color:var(--navy)}.tab.active{background:var(--navy);color:white;border-color:var(--navy)}.tab.order-needs-attention,.tab.order-needs-attention.active{background:#fff0f0;color:#a32121;border:2px solid #c43636}.tab.order-needs-attention.active{background:#b52d2d;color:white}.panel{display:none}.panel.active{display:block}.card{background:#fff;border:1px solid var(--line);border-radius:14px;padding:15px;margin-bottom:12px;box-shadow:0 2px 7px #173b5709}.card h2{font-size:16px;margin:0 0 13px}.stats{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px}.stat{background:#fff;border:1px solid var(--line);border-radius:12px;padding:13px}.stat span{display:block;font-size:12px;color:var(--muted)}.stat strong{font-size:24px;color:var(--navy)}label{display:block;font-size:13px;font-weight:700;margin:10px 0 5px}input,select,textarea{font:inherit;width:100%;padding:11px;border:1px solid #cbd6de;border-radius:9px;background:#fff;color:var(--text)}.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.btn{border:0;border-radius:10px;padding:12px 14px;font:inherit;font-weight:750;background:var(--navy);color:#fff;width:100%;margin-top:13px}.btn.secondary{background:#e8eef2;color:var(--navy)}.btn.danger{background:#fff0f0;color:var(--red);border:1px solid #f0caca}.hint{font-size:12px;color:var(--muted);line-height:1.6}.item{padding:12px 0;border-bottom:1px solid var(--line)}.item:last-child{border-bottom:0}.itemtop{display:flex;justify-content:space-between;gap:10px;align-items:start}.itemname{font-weight:750}.qty{font-size:20px;font-weight:800;color:var(--navy);white-space:nowrap}.meta{font-size:12px;color:var(--muted);margin-top:3px}.actions{display:flex;gap:7px;margin-top:9px}.smallbtn{border:1px solid var(--line);background:#f7f9fa;color:var(--navy);border-radius:8px;padding:7px 10px;font-weight:700}.empty{color:var(--muted);font-size:13px;padding:12px 0}.notice{background:#fff8df;border:1px solid #f0dfa1;color:#695516;padding:11px;border-radius:10px;font-size:12px;line-height:1.6;margin-bottom:12px}.tag{font-size:11px;padding:3px 7px;border-radius:20px;background:#eaf2f7;color:var(--blue)}.footer{font-size:11px;text-align:center;color:var(--muted);padding:12px}
+:root{--navy:#173b57;--blue:#23658a;--bg:#f3f6f8;--line:#dce4ea;--text:#1d2933;--muted:#657582;--green:#147d55;--red:#b43c3c}*{box-sizing:border-box}body{margin:0;font-family:system-ui,-apple-system,"Noto Sans JP",sans-serif;background:var(--bg);color:var(--text)}header{background:var(--navy);color:#fff;padding:18px 16px 14px;position:sticky;top:0;z-index:3}header h1{font-size:20px;margin:0 0 4px}header p{margin:0;font-size:12px;opacity:.85}.wrap{max-width:760px;margin:auto;padding:14px 12px 36px}.tabs{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:14px}.tab{flex:1 1 29%;border:1px solid var(--line);background:#fff;border-radius:10px;padding:11px 5px;font-weight:700;color:var(--navy)}.tab.active{background:var(--navy);color:white;border-color:var(--navy)}.tab.order-needs-attention,.tab.order-needs-attention.active{background:#fff0f0;color:#a32121;border:2px solid #c43636}.tab.order-needs-attention.active{background:#b52d2d;color:white}.panel{display:none}.panel.active{display:block}.card{background:#fff;border:1px solid var(--line);border-radius:14px;padding:15px;margin-bottom:12px;box-shadow:0 2px 7px #173b5709}.card h2{font-size:16px;margin:0 0 13px}.stats{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px}.stat{background:#fff;border:1px solid var(--line);border-radius:12px;padding:13px}.stat span{display:block;font-size:12px;color:var(--muted)}.stat strong{font-size:24px;color:var(--navy)}label{display:block;font-size:13px;font-weight:700;margin:10px 0 5px}input,select,textarea{font:inherit;width:100%;padding:11px;border:1px solid #cbd6de;border-radius:9px;background:#fff;color:var(--text)}.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.btn{border:0;border-radius:10px;padding:12px 14px;font:inherit;font-weight:750;background:var(--navy);color:#fff;width:100%;margin-top:13px}.btn.secondary{background:#e8eef2;color:var(--navy)}.btn.danger{background:#fff0f0;color:var(--red);border:1px solid #f0caca}.hint{font-size:12px;color:var(--muted);line-height:1.6}.item{padding:12px 0;border-bottom:1px solid var(--line)}.item:last-child{border-bottom:0}.itemtop{display:flex;justify-content:space-between;gap:10px;align-items:start}.itemname{font-weight:750}.qty{font-size:20px;font-weight:800;color:var(--navy);white-space:nowrap}.meta{font-size:12px;color:var(--muted);margin-top:3px}.actions{display:flex;gap:7px;margin-top:9px}.smallbtn{border:1px solid var(--line);background:#f7f9fa;color:var(--navy);border-radius:8px;padding:7px 10px;font-weight:700}.empty{color:var(--muted);font-size:13px;padding:12px 0}.notice{background:#fff8df;border:1px solid #f0dfa1;color:#695516;padding:11px;border-radius:10px;font-size:12px;line-height:1.6;margin-bottom:12px}.tag{font-size:11px;padding:3px 7px;border-radius:20px;background:#eaf2f7;color:var(--blue)}.footer{font-size:11px;text-align:center;color:var(--muted);padding:12px}
 .reservation{color:#bb2525;font-size:13px;font-weight:700;line-height:1.65;margin-top:7px}.reserve-panel{border:2px solid #e8b8b8}.reservation button{color:#9e2020;border:1px solid #e6baba;background:#fff;border-radius:7px;padding:4px 9px;margin-left:6px}
 .success-banner{background:#e8f7ee;border:2px solid #198754;color:#12613b;border-radius:12px;padding:13px;margin-bottom:12px;font-weight:700}.success-banner[hidden]{display:none}.item.just-reserved{background:#fff7e8;outline:2px solid #e6a13c;outline-offset:-2px;border-radius:10px;padding:12px;scroll-margin-top:105px}
 .jacket-color{display:inline-flex;align-items:center;gap:5px;vertical-align:middle}.jacket-color strong{font-size:14px}.jacket-swatch{display:inline-block;width:15px;height:15px;flex:none;border:1px solid #85919a;border-radius:4px}
 .finish-label{font-size:11px;color:#52616b;margin-left:3px}.order-alert{background:#fff0f0;border:2px solid #c43636;border-radius:12px;padding:13px;margin-bottom:12px;color:#a32121;font-weight:750}.order-alert.all-ordered{background:#fff;border:1px solid var(--line);color:var(--navy);font-weight:700}.order-alert.all-ordered button{background:var(--navy)}.order-alert button{display:block;width:100%;margin-top:8px;border:0;background:#a32121;color:white;border-radius:9px;padding:12px;font-weight:750}.order-line{padding:13px 0;border-bottom:1px solid #ddd}.order-line strong{color:#a32121}.shortage{color:#b32323;font-weight:750;margin:7px 0}.order-link{border:0;border-radius:7px;padding:7px 11px;background:#a32121;color:#fff;font-weight:700;margin-top:6px}#orderDetails[hidden],#orderAlert[hidden]{display:none!important}
 .prep-line{display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid var(--line)}.prep-line input[type="checkbox"]{width:24px;height:24px;flex:none;accent-color:var(--green)}.prep-line.is-done{background:#f0f9f3}.prep-line.is-done .prep-name{text-decoration:line-through;color:var(--muted)}.prep-name{font-weight:700}.prep-date{margin-top:16px;padding:8px 10px;background:#eaf2f7;border-radius:8px;font-weight:700}.tabs .tab[hidden]{display:none!important}.order-check-row{display:flex;align-items:center;gap:12px;margin:12px 0;padding:11px 13px;border:2px solid #d8e0e5;border-radius:10px;background:#fff;font-size:15px;font-weight:750;cursor:pointer}.order-check-row input[type="checkbox"]{appearance:auto;-webkit-appearance:checkbox;display:block!important;opacity:1!important;visibility:visible!important;position:static!important;width:25px!important;height:25px!important;min-width:25px;accent-color:#147d55;margin:0}.order-check-row.is-done{border-color:#81bfa0;background:#e9f6ee;color:#11663e}
-/* v7.4: keep inventory step selectors visible even if another render task fails */
-#categoryFilter:has(option[value="GW"]:checked) ~ #densityFilterWrap,
-#categoryFilter:has(option[value="断熱マット"]:checked) ~ #densityFilterWrap,
-#categoryFilter:has(option[value="AG断熱マット"]:checked) ~ #densityFilterWrap {display:block!important}
-#categoryFilter:has(option[value="RW"]:checked) ~ #finishFilterWrap,
-#categoryFilter:has(option[value="GW"]:checked) ~ #densityFilterWrap:has(#densityFilter option:not([value=""]):checked) ~ #finishFilterWrap {display:block!important}
-#categoryFilter:has(option[value="RW"]:checked) ~ #finishFilterWrap:has(#finishFilter option:not([value=""]):checked) ~ #thicknessFilterWrap,
-#categoryFilter:has(option[value="GW"]:checked) ~ #finishFilterWrap:has(#finishFilter option:not([value=""]):checked) ~ #thicknessFilterWrap {display:block!important}
+.branch-switch{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px;padding:10px 12px;background:#e5eaf0}.branch-btn{border:2px solid transparent;border-radius:10px;padding:12px 2px;font-weight:800;font-size:13px;background:#fff;color:#26374a}.branch-btn[data-branch="toyonaka"]{color:#67329b}.branch-btn[data-branch="sakai"]{color:#262626}.branch-btn.selected{border-color:currentColor;box-shadow:0 0 0 2px #ffffff inset}.branch-label{font-size:19px;font-weight:900;margin-top:7px}body.branch-toyonaka{--navy:#633394;--blue:#7846aa;--bg:#f5effb;--line:#dfd0ec;--text:#30233e;--muted:#72627d}body.branch-toyonaka .branch-switch{background:#e8d9f5}body.branch-sakai{--navy:#181818;--blue:#414141;--bg:#e8e8e8;--line:#c9c9c9;--text:#222;--muted:#666}body.branch-sakai .branch-switch{background:#333}body.branch-sakai .branch-btn{background:#ededed}body.branch-sakai .branch-btn.selected{background:#fff}body.branch-sakai .card,body.branch-sakai .stat{border-color:#a7a7a7}
+
+/* v7.3: 本社は白を基調にし、営業所の配色は維持 */
+body:not(.branch-toyonaka):not(.branch-sakai){--navy:#394c5a;--blue:#506779;--bg:#ffffff;--line:#e0e5e9;--text:#202b33;--muted:#697680}
+body:not(.branch-toyonaka):not(.branch-sakai) header{background:#ffffff;color:#202b33;border-bottom:2px solid #e0e5e9}
+body:not(.branch-toyonaka):not(.branch-sakai) .branch-switch{background:#ffffff;border-bottom:1px solid #e0e5e9}
+body:not(.branch-toyonaka):not(.branch-sakai) .branch-btn[data-branch="honsha"]{color:#394c5a}
+body:not(.branch-toyonaka):not(.branch-sakai) .branch-btn.selected{background:#f0f3f5}
+body:not(.branch-toyonaka):not(.branch-sakai) .card,body:not(.branch-toyonaka):not(.branch-sakai) .stat{background:#ffffff;box-shadow:0 1px 5px #15253608}
+body:not(.branch-toyonaka):not(.branch-sakai) .tab{background:#ffffff}
+body:not(.branch-toyonaka):not(.branch-sakai) .tab.active{background:#edf1f4;color:#263845;border-color:#8e9fac}
+body:not(.branch-toyonaka):not(.branch-sakai) .tab.order-needs-attention{background:#fff0f0;color:#a32121;border:2px solid #c43636}
+body:not(.branch-toyonaka):not(.branch-sakai) .tab.order-needs-attention.active{background:#b52d2d;color:#fff}
 </style></head>
-<body><header><h1>会社の在庫管理</h1><p>試作品 v7.1　保温材の入庫・出庫・在庫確認</p></header><main class="wrap">
+<body><div class="branch-switch" role="group" aria-label="倉庫拠点を切り替え"><button class="branch-btn selected" data-branch="honsha" type="button">本社</button><button class="branch-btn" data-branch="toyonaka" type="button">豊中営業所</button><button class="branch-btn" data-branch="sakai" type="button">堺営業所</button></div><header><h1>会社の在庫管理</h1><div id="branchLabel" class="branch-label">本社</div><p>試作品 v7.21　保温材の入庫・出庫・在庫確認</p></header><main class="wrap">
 <div class="notice"><b>試作品について：</b>データはこのブラウザ内だけに保存されます。ほかの社員のスマホとは共有されません。会社全体で使う前に、共有データベースとログイン機能を追加します。</div>
-<div class="tabs"><button class="tab active" data-tab="stock">在庫一覧</button><button class="tab" data-tab="move" hidden aria-hidden="true" tabindex="-1">入庫・出庫</button><button class="tab" data-tab="reserve">予約</button><button class="tab" data-tab="reserved" id="reservedTab" style="display:inline-block!important;visibility:visible!important;opacity:1!important">予約済</button><button class="tab" data-tab="prepList">材料用意</button><button class="tab" data-tab="history">履歴</button><button class="tab" data-tab="settings">品目登録</button></div>
-<section id="stock" class="panel active"><div id="reservationSuccess" class="success-banner" role="status" hidden></div><div id="orderAlert" class="order-alert" hidden></div><div id="orderDetails" class="card" hidden><button class="btn secondary" id="closeOrdersTop" type="button" style="margin-bottom:12px">一覧に戻る</button><h2>発注内容（全現場）</h2><div id="orderList"></div><button class="btn secondary" id="closeOrders" type="button">一覧に戻る</button></div><div class="stats"><div class="stat"><span>登録品目数</span><strong id="countItems">0</strong></div><div class="stat"><span>在庫合計（数量）</span><strong id="sumQty">0</strong></div></div><div class="card"><label for="categoryFilter">材料の種類を選択</label><select id="categoryFilter"><option value="">材料を選んでください</option><option value="ジャケット">ジャケット</option><option value="エルボ">エルボ</option><option value="断熱マット">断熱マット</option><option value="AG断熱マット">AG断熱マット</option><option value="GWP">GWP</option><option value="AGGWP">AGGWP</option><option value="GW">GW</option><option value="RW">RW</option><option value="金網（カラー金網）">金網（カラー金網）</option><option value="スチロール">スチロール</option><option value="スチロールエルボ">スチロールエルボ</option><option value="ファインJ">ファインJ</option><option value="ファインエルボ">ファインエルボ</option></select><div id="densityFilterWrap" hidden><label for="densityFilter">密度を選択</label><select id="densityFilter"><option value="">密度を選んでください</option><option value="24k">24k</option><option value="32k">32k</option></select></div><div id="finishFilterWrap" hidden><label for="finishFilter">外装材を選択</label><select id="finishFilter"><option value="">ALKかAGを選んでください</option><option value="ALK">ALK</option><option value="AG">AG</option></select></div><div id="thicknessFilterWrap" hidden><label for="thicknessFilter">厚みを選択</label><select id="thicknessFilter"><option value="">厚みを選んでください</option><option value="25t">25t</option><option value="50t">50t</option></select></div><div id="meshColorWrap" hidden><label for="meshColor">色を選択</label><select id="meshColor"><option value="">色を選んでください</option><option>金網</option><option>白アミ</option><option>緑アミ</option><option>青アミ</option><option>赤アミ</option></select></div><div id="meshGaugeWrap" hidden><label for="meshGauge">目合を選択</label><select id="meshGauge"><option value="">3分目か5分目を選んでください</option><option>3分目</option><option>5分目</option></select></div><div id="meshRollWrap" hidden><label for="meshRoll">巻きの長さを選択</label><select id="meshRoll"><option value="">長さを選んでください</option><option>25m巻き</option><option>50m巻き</option></select></div><div id="colorFilterWrap" hidden><label for="colorFilter">色を選択</label><select id="colorFilter"><option value="">色を選んでください</option></select></div><p id="filterGuide" class="hint">まず材料の種類を選んでください。</p></div><div class="card"><label for="search">サイズ・規格を候補から選択（任意）</label><select id="search"><option value="">すべてのサイズ・規格</option></select></div><div class="card"><h2>現在の在庫</h2><div id="stockList"></div></div><button class="btn secondary" id="exportBtn">データを書き出す（バックアップ）</button><label for="importFile">バックアップを読み込む</label><input type="file" id="importFile" accept="application/json"><p class="hint">バックアップはこの試作品のデータ移行用です。会社全体の共有機能ではありません。</p></section>
+<div class="tabs"><button class="tab active" data-tab="stock">在庫一覧</button><button class="tab" data-tab="move" hidden aria-hidden="true" tabindex="-1">入庫・出庫</button><button class="tab" data-tab="reserve">予約</button><button class="tab" data-tab="reserved">予約済</button><button class="tab" data-tab="prepList">材料用意</button><button class="tab" data-tab="history">履歴</button><button class="tab" data-tab="settings">品目登録</button></div>
+<section id="stock" class="panel active"><div id="reservationSuccess" class="success-banner" role="status" hidden></div><div id="orderAlert" class="order-alert" hidden></div><div id="orderDetails" class="card" hidden><button class="btn secondary" id="closeOrdersTop" type="button" style="margin-bottom:12px">一覧に戻る</button><h2>発注内容（未発注を優先表示）</h2><div id="orderList"></div><button class="btn secondary" id="closeOrders" type="button">一覧に戻る</button></div><div class="stats"><div class="stat"><span>登録品目数</span><strong id="countItems">0</strong></div><div class="stat"><span>在庫合計（数量）</span><strong id="sumQty">0</strong></div></div><div class="card"><label for="categoryFilter">材料の種類を選択</label><select id="categoryFilter"><option value="">材料を選んでください</option><option value="ジャケット">ジャケット</option><option value="エルボ">エルボ</option><option value="断熱マット">断熱マット</option><option value="AG断熱マット">AG断熱マット</option><option value="GWP">GWP</option><option value="AGGWP">AGGWP</option><option value="GW">GW</option><option value="RW">RW</option><option value="金網（カラー金網）">金網（カラー金網）</option><option value="スチロール">スチロール</option><option value="スチロールエルボ">スチロールエルボ</option><option value="ファインJ">ファインJ</option><option value="ファインエルボ">ファインエルボ</option><option value="ポリテープ">ポリテープ</option><option value="コーキング">コーキング</option></select><div id="densityFilterWrap" hidden><label for="densityFilter">密度を選択</label><select id="densityFilter"><option value="">密度を選んでください</option><option value="24k">24k</option><option value="32k">32k</option></select></div><div id="finishFilterWrap" hidden><label for="finishFilter">外装材を選択</label><select id="finishFilter"><option value="">ALKかAGを選んでください</option><option value="ALK">ALK</option><option value="AG">AG</option></select></div><div id="thicknessFilterWrap" hidden><label for="thicknessFilter">厚みを選択</label><select id="thicknessFilter"><option value="">厚みを選んでください</option><option value="25t">25t</option><option value="50t">50t</option></select></div><div id="meshColorWrap" hidden><label for="meshColor">色を選択</label><select id="meshColor"><option value="">色を選んでください</option><option>金網</option><option>白アミ</option><option>緑アミ</option><option>青アミ</option><option>赤アミ</option></select></div><div id="meshGaugeWrap" hidden><label for="meshGauge">目合を選択</label><select id="meshGauge"><option value="">3分目か5分目を選んでください</option><option>3分目</option><option>5分目</option></select></div><div id="meshRollWrap" hidden><label for="meshRoll">巻きの長さを選択</label><select id="meshRoll"><option value="">長さを選んでください</option><option>25m巻き</option><option>50m巻き</option></select></div><div id="colorFilterWrap" hidden><label for="colorFilter">色を選択</label><select id="colorFilter"><option value="">色を選んでください</option></select></div><p id="filterGuide" class="hint">まず材料の種類を選んでください。</p></div><div class="card"><label for="search">サイズ・規格を候補から選択（任意）</label><select id="search"><option value="">すべてのサイズ・規格</option></select></div><div class="card"><h2>現在の在庫</h2><div id="stockList"></div></div><button class="btn secondary" id="exportBtn">データを書き出す（バックアップ）</button><label for="importFile">バックアップを読み込む</label><input type="file" id="importFile" accept="application/json"><p class="hint">バックアップはこの試作品のデータ移行用です。会社全体の共有機能ではありません。</p></section>
 <section id="move" class="panel"><div class="card"><h2>入庫・出庫を登録</h2><label for="moveItem">品目</label><select id="moveItem"></select><div class="grid"><div><label for="moveType">区分</label><select id="moveType"><option value="in">入庫</option><option value="out">出庫</option></select></div><div><label for="moveQty">数量</label><input id="moveQty" type="number" min="1" step="1" placeholder="例：5"></div></div><label for="movePerson">入力者（任意）</label><input id="movePerson" placeholder="例：山田"><label for="moveNote">メモ（任意）</label><input id="moveNote" placeholder="現場名・用途など"><button class="btn" id="saveMove">入庫・出庫を登録</button><p class="hint">出庫数が在庫数を超える場合は登録できません。</p></div></section>
-<section id="reserved" class="panel"><div class="card"><h2>予約済み材料（全現場）</h2><div id="reservedList"></div></div></section>
-<section id="reserve" class="panel"><div class="card reserve-panel"><h2>材料の予約</h2><label for="reserveCategory">材料を選んでください</label><select id="reserveCategory"><option value="">材料を選んでください</option></select><div id="reserveSteps"></div><label for="reserveItem">選択した品目</label><select id="reserveItem" disabled><option value="">先に材料と規格を選んでください</option></select><div id="reserveStockNotice" class="hint" role="status"></div><label for="reserveDate">いつ使いますか？（使用日・積載日）</label><input id="reserveDate" type="date"><label for="reserveTime">朝か夕かを選んでください</label><select id="reserveTime"><option value="">選んでください</option><option value="朝">朝</option><option value="夕">夕</option></select><div id="reserveDateWarning" role="alert" style="color:#c62828;font-weight:700;margin-top:6px" hidden>使用日はもう過ぎています。過去の日付では予約できません。</div><label for="reservePlace">どこで使いますか？（現場名）</label><input id="reservePlace" placeholder="例：奈良市○○現場"><label for="reservePerson">誰が使いますか？</label><input id="reservePerson" placeholder="例：田中"><label for="reserveQty">予約数量</label><input id="reserveQty" type="number" min="1" step="1" value="1"><button class="btn" id="saveReservation">この材料を予約する</button><div id="reserveContinue" class="card" hidden><h3 id="reserveContinueQuestion"></h3><p class="hint">「はい」を押すと予約を締め切り、必要な発注案内をトップ画面に表示します。</p><button class="btn" type="button" id="finishSiteReservation">はい（この現場の予約は終了）</button><button class="btn secondary" type="button" id="continueSiteReservation">いいえ（ほかの材料も予約する）</button></div><p class="hint">予約した材料は使用日・積載日を過ぎると自動的に在庫数から差し引かれます。。予約は在庫一覧から取り消せます。</p></div></section><section id="siteOrders" class="panel"><div class="card"><h2>現場別 発注リスト</h2><label for="orderSite">どこの現場ですか？</label><select id="orderSite"><option value="">現場を選んでください</option></select><p class="hint">登録済みの予約から現場名を表示します。使用日が早い予約から在庫を割り当て、現場ごとの不足分を計算します。</p><div id="siteOrderResult" aria-live="polite"></div></div></section><section id="prepList" class="panel"><div class="card"><h2>材料用意</h2><p class="hint">全現場の予約材料を使用日ごとに表示します。材料を用意したらチェックを入れてください。チェックはこの端末に保存されます。</p><div id="prepResult" aria-live="polite"></div></div></section><section id="history" class="panel"><div class="card"><h2>発注・材料用意の履歴</h2><p class="hint">使用日が過ぎた予約を表示します。チェック状態は使用日経過時に記録したものです。</p><div id="expiredWorkHistory"></div><h2>入出庫履歴</h2><div id="historyList"></div><button class="btn danger" id="clearHistory">履歴をすべて削除</button><p class="hint">削除操作は取り消せません。試験用データでのみお試しください。</p></div></section>
-<section id="settings" class="panel"><div class="card"><h2>品目を登録</h2><label for="itemName">品名</label><input id="itemName" placeholder="例：グラスウール保温筒"><div class="grid"><div><label for="itemSpec">規格・サイズ</label><input id="itemSpec" placeholder="例：25A・厚さ25mm"></div><div><label for="itemUnit">単位</label><select id="itemUnit"><option>個</option><option>本</option><option>枚</option><option>巻</option><option>箱</option><option>m</option><option>kg</option><option>セット</option></select></div></div><label for="itemPlace">保管場所（任意）</label><input id="itemPlace" placeholder="例：倉庫A・棚2"><div class="grid"><div><label for="itemInitial">初期在庫数</label><input id="itemInitial" type="number" min="0" step="1" value="0"></div><div><label for="itemMin">在庫不足の目安（任意）</label><input id="itemMin" type="number" min="0" step="1" placeholder="例：3"></div></div><button class="btn" id="addItem">品目を登録</button><p class="hint">削除できるのは「品目登録」から追加した品目だけです。既定の材料は削除できません。</p></div><div class="card"><h2>追加登録した品目の取り消し</h2><p class="hint">既定のジャケット・エルボなどは表示されません。在庫や予約が残っている品目は削除できません。</p><div id="customItemList"></div></div></section><div class="footer">試作品 v7.1 · グラスウール保温筒のサイズ別・ジャケット・エルボの色とサイズ別品目を登録済み。実際の業務データを入れる前に、共有・認証・バックアップ機能を整えてください。</div></main>
+<section id="reserve" class="panel"><div class="card reserve-panel"><h2>材料の予約</h2><label for="reserveCategory">材料を選んでください</label><select id="reserveCategory"><option value="">材料を選んでください</option></select><div id="reserveSteps"></div><label for="reserveItem">選択した品目</label><select id="reserveItem" disabled><option value="">先に材料と規格を選んでください</option></select><div id="reserveStockNotice" class="hint" role="status"></div><label for="reserveDate">いつ使いますか？（使用日）</label><input id="reserveDate" type="date"><div id="reserveDateWarning" role="alert" style="color:#c62828;font-weight:700;margin-top:6px" hidden>使用日はもう過ぎています。過去の日付では予約できません。</div><label for="reservePlace">どこで使いますか？（現場名）</label><input id="reservePlace" placeholder="例：奈良市○○現場"><label for="reservePerson">誰が使いますか？</label><input id="reservePerson" placeholder="例：田中"><label for="reserveQty">予約数量</label><input id="reserveQty" type="number" min="1" step="1" value=""><button class="btn" id="saveReservation">この材料を予約する</button><div id="reserveContinue" class="card" hidden><h3 id="reserveContinueQuestion"></h3><p class="hint">「はい」を押すと予約を締め切り、必要な発注案内をトップ画面に表示します。</p><button class="btn" type="button" id="finishSiteReservation">はい（この現場の予約は終了）</button><button class="btn secondary" type="button" id="continueSiteReservation">いいえ（ほかの材料も予約する）</button></div><p class="hint">予約しても実際の在庫数は減りません。予約は在庫一覧から取り消せます。</p></div></section><section id="reserved" class="panel"><div class="card"><h2>予約済の材料（現場別）</h2><p class="hint">選択中の拠点で予約されている材料を、現場ごとに表示します。</p><div id="reservedList"></div></div></section><section id="siteOrders" class="panel"><div class="card"><h2>現場別 発注リスト</h2><label for="orderSite">どこの現場ですか？</label><select id="orderSite"><option value="">現場を選んでください</option></select><p class="hint">登録済みの予約から現場名を表示します。使用日が早い予約から在庫を割り当て、現場ごとの不足分を計算します。</p><div id="siteOrderResult" aria-live="polite"></div></div></section><section id="prepList" class="panel"><div class="card"><h2>材料用意</h2><p class="hint">全現場の予約材料を使用日ごとに表示します。材料を用意したらチェックを入れてください。チェックはこの端末に保存されます。</p><div id="prepResult" aria-live="polite"></div></div></section><section id="history" class="panel"><div class="card"><h2>発注・材料用意の履歴</h2><p class="hint">使用日が過ぎた予約を表示します。チェック状態は使用日経過時に記録したものです。</p><div id="expiredWorkHistory"></div><h2>入出庫履歴</h2><div id="historyList"></div><button class="btn danger" id="clearHistory">履歴をすべて削除</button><p class="hint">削除操作は取り消せません。試験用データでのみお試しください。</p></div></section>
+<section id="settings" class="panel"><div class="card"><h2>品目を登録</h2><label for="itemName">品名</label><input id="itemName" placeholder="例：グラスウール保温筒"><div class="grid"><div><label for="itemSpec">規格・サイズ</label><input id="itemSpec" placeholder="例：25A・厚さ25mm"></div><div><label for="itemUnit">単位</label><select id="itemUnit"><option>個</option><option>本</option><option>枚</option><option>巻</option><option>箱</option><option>m</option><option>kg</option><option>セット</option></select></div></div><label for="itemPlace">保管場所（任意）</label><input id="itemPlace" placeholder="例：倉庫A・棚2"><div class="grid"><div><label for="itemInitial">初期在庫数</label><input id="itemInitial" type="number" min="0" step="1" value="0"></div><div><label for="itemMin">在庫不足の目安（任意）</label><input id="itemMin" type="number" min="0" step="1" placeholder="例：3"></div></div><button class="btn" id="addItem">品目を登録</button><p class="hint">削除できるのは「品目登録」から追加した品目だけです。既定の材料は削除できません。</p></div><div class="card"><h2>追加登録した品目の取り消し</h2><p class="hint">既定のジャケット・エルボなどは表示されません。在庫や予約が残っている品目は削除できません。</p><div id="customItemList"></div></div></section><div class="footer">試作品 v7.21 · グラスウール保温筒のサイズ別・ジャケット・エルボの色とサイズ別品目を登録済み。実際の業務データを入れる前に、共有・認証・バックアップ機能を整えてください。</div></main>
 <script>
-const KEY='inventoryPrototype_v08';let data={items:[],history:[],reservations:[]};try{const saved=localStorage.getItem(KEY);if(saved)data=JSON.parse(saved);else if(localStorage.getItem('inventoryPrototype_v07')||localStorage.getItem('inventoryPrototype_v06')){data=JSON.parse(localStorage.getItem('inventoryPrototype_v07')||localStorage.getItem('inventoryPrototype_v06'));localStorage.setItem(KEY,JSON.stringify(data))}else{
+let KEY='inventoryPrototype_v08';let data={items:[],history:[],reservations:[]};try{const saved=localStorage.getItem(KEY);if(saved)data=JSON.parse(saved);else if(localStorage.getItem('inventoryPrototype_v07')||localStorage.getItem('inventoryPrototype_v06')){data=JSON.parse(localStorage.getItem('inventoryPrototype_v07')||localStorage.getItem('inventoryPrototype_v06'));localStorage.setItem(KEY,JSON.stringify(data))}else{
 const gwSizes=['15A20t','20A20t','32A20t','40A20t','50A20t','65A20t','80A20t','100A25t','125A25t','150A25t','15A30t','20A30t','25A30t','32A30t','40A30t','50A30t','65A30t','80A30t'];
 const jacketColors=['ニュークリーム','ニューシルバー','シルバー','ステンレス','ガルバ','クリーム','サンドホワイト','ホワイト','ダル黒','ブルー','レンガ','グレー'];
 const jacketSizes=['No.0','No.1','No.2s','No.2','No.3s','No.3','No.4s','No.4','No.5s','No.5','No.6s','No.6','No.7s','No.7','No.8s','No.8','No.9s','No.9','No.10','No.11','No.13','No.14','No.15','No.16','No.17','No.18','No.19s','No.19','No.20','No.21','No.22s','No.22','No.23','No.24','No.25','No.26','No.27','No.28','No.29','No.30','No.31','No.32','No.33','No.34','No.35','No.36'];
@@ -244,42 +248,73 @@ if(Array.isArray(data.items)){
  }
  if(changed)try{localStorage.setItem(KEY,JSON.stringify(data))}catch(e){}
 }
-// v3.4: remove the unwanted "ポリテープ" item from saved inventory.
-// Preserve records with stock or reservations to prevent accidental loss.
-let polyTapeRemovalBlocked=false;
-if(Array.isArray(data.items)){
- const before=data.items.length;
- data.items=data.items.filter(i=>{
-  if(String(i.name||'').trim()!=='ポリテープ')return true;
-  const hasStock=Number(i.qty||0)!==0;
-  const hasReservations=Array.isArray(data.reservations)&&data.reservations.some(r=>r.itemId===i.id);
-  if(hasStock||hasReservations){polyTapeRemovalBlocked=true;return true}
-  return false;
- });
- if(data.items.length!==before)try{localStorage.setItem(KEY,JSON.stringify(data))}catch(e){}
-}
+// v7.6: ポリテープ is a standard item; keep existing inventory and reservations.
 if(!Array.isArray(data.pendingOrderSites))data.pendingOrderSites=[];
 const $=id=>document.getElementById(id);
+const BRANCHES={honsha:{name:'本社',key:'inventoryPrototype_v08'},toyonaka:{name:'豊中営業所',key:'inventoryPrototype_v08_toyonaka'},sakai:{name:'堺営業所',key:'inventoryPrototype_v08_sakai'}};
+let currentBranch='honsha';
+// Ensure all five tape sizes exist in every warehouse without resetting saved data.
+const POLY_TAPE_SIZES=['4インチ','5インチ','6インチ','8インチ','10インチ'];
+function ensurePolyTapeItems(branchData){
+ if(!Array.isArray(branchData.items))branchData.items=[];
+ for(const [n,spec] of POLY_TAPE_SIZES.entries()){
+  if(!branchData.items.some(i=>i.name==='ポリテープ'&&i.spec===spec)){
+   branchData.items.push({id:'poly_tape_v76_'+n,name:'ポリテープ',spec,unit:'巻',place:'',qty:0,min:''});
+  }
+ }
+}
+ensurePolyTapeItems(data);
+// v7.21: コーキング全10色を既存データを消さずに追加する。
+const CAULKING_COLORS=["クリア", "アイボリー", "ホワイト", "アルミ", "ブラック", "変成クリア", "変成アイボリー", "変成ホワイト", "変成アルミ", "変成ブラック"];
+function ensureCaulkingItems(branchData){
+ if(!Array.isArray(branchData.items))branchData.items=[];
+ for(const [n,spec] of CAULKING_COLORS.entries()){
+  if(!branchData.items.some(i=>i.name==='コーキング'&&i.spec===spec)){
+   branchData.items.push({id:'caulking_v719_'+n,name:'コーキング',spec,unit:'本',place:'',qty:0,min:''});
+  }
+ }
+}
+ensureCaulkingItems(data);
+try{localStorage.setItem(KEY,JSON.stringify(data))}catch(e){}
+
+// Each branch has independent inventory, reservations, preparation, orders and history.
+const branchCatalog=JSON.parse(JSON.stringify(data.items));
+function freshBranchData(){return {items:branchCatalog.map(i=>({...i,qty:0,min:i.min??'',place:''})),history:[],reservations:[],pendingOrderSites:[],preparedReservations:{},expiredWorkHistory:{},orderedSiteItems:{},loadedReservations:{}}}
+function switchBranch(branch){
+ if(!BRANCHES[branch]||branch===currentBranch)return;
+ const next=BRANCHES[branch];
+ let incoming;
+ try{const raw=localStorage.getItem(next.key);incoming=raw?JSON.parse(raw):freshBranchData();if(!Array.isArray(incoming.items)||!Array.isArray(incoming.history))throw Error('invalid');}
+ catch(e){alert('営業所データを読み込めませんでした。切り替えは中止しました。');return;}
+ currentBranch=branch;KEY=next.key;data=incoming;
+ ensurePolyTapeItems(data);
+ ensureCaulkingItems(data);
+ if(!Array.isArray(data.reservations))data.reservations=[];
+ if(!Array.isArray(data.pendingOrderSites))data.pendingOrderSites=[];
+ if(!data.preparedReservations||typeof data.preparedReservations!=='object')data.preparedReservations={};
+ if(!data.expiredWorkHistory||typeof data.expiredWorkHistory!=='object')data.expiredWorkHistory={};
+ if(!data.orderedSiteItems||typeof data.orderedSiteItems!=='object')data.orderedSiteItems={};
+if(!data.loadedReservations||typeof data.loadedReservations!=='object')data.loadedReservations={};
+ document.body.classList.remove('branch-toyonaka','branch-sakai');if(branch!=='honsha')document.body.classList.add('branch-'+branch);
+ $('branchLabel').textContent=next.name;
+ document.querySelectorAll('[data-branch]').forEach(b=>{const active=b.dataset.branch===branch;b.classList.toggle('selected',active);b.setAttribute('aria-pressed',String(active))});
+ $('reservationSuccess').hidden=true;$('orderDetails').hidden=true;$('reserveContinue').hidden=true;$('saveReservation').disabled=false;lastReservedSite='';
+ for(const id of ['categoryFilter','densityFilter','finishFilter','thicknessFilter','meshColor','meshGauge','meshRoll','colorFilter','search','reserveCategory','reserveItem']){const el=$(id);if(el)el.value='';}
+ reserveParts=[];
+ document.querySelector('[data-tab="stock"]').click();
+ try{localStorage.setItem(KEY,JSON.stringify(data))}catch(e){alert('この端末では営業所のデータを保存できません。')}
+ render();window.scrollTo({top:0,behavior:'auto'});
+}
+document.querySelectorAll('[data-branch]').forEach(b=>b.addEventListener('click',()=>switchBranch(b.dataset.branch)));
+
 function isPendingOrder(item){return reservationsFor(item.id).some(r=>data.pendingOrderSites.includes(String(r.place||'').trim()))}
 function visibleShortage(item){return unplacedOrders().find(o=>o.item.id===item.id)||null}
 
 let storageAvailable=true;try{localStorage.setItem('__inventory_test','1');localStorage.removeItem('__inventory_test')}catch(e){storageAvailable=false}
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));function save(){try{localStorage.setItem(KEY,JSON.stringify(data))}catch(e){alert('保存できません。ブラウザの保存設定を確認してください。')}render()}function fmt(t){return new Date(t).toLocaleString('ja-JP',{year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'})}
-document.querySelectorAll('.tab').forEach(b=>b.addEventListener('click',()=>{document.querySelectorAll('.tab').forEach(x=>x.classList.toggle('active',x===b));document.querySelectorAll('.panel').forEach(x=>x.classList.toggle('active',x.id===b.dataset.tab));if(b.dataset.tab==='reserved')renderReservedList();if(b.dataset.tab==='move')fillMove();if(b.dataset.tab==='prepList'){renderPrepList();updatePrepTabAttention();}if(b.dataset.tab==='reserve'){fillReserve();if(lastReservedSite&&data.pendingOrderSites.includes(lastReservedSite)){$('reserveContinue').hidden=false;$('saveReservation').disabled=true;}}}));
-function renderReservedList(){
- const target=$('reservedList');if(!target)return;
- const rows=(data.reservations||[]).filter(r=>!isPastReservation(r)).slice().sort((a,b)=>String(a.place||'').localeCompare(String(b.place||''),'ja')||String(a.date||'').localeCompare(String(b.date||'')));
- if(!rows.length){target.innerHTML='<div class="empty">現在予約されている材料はありません。</div>';return}
- const sites=[...new Set(rows.map(r=>String(r.place||'').trim()||'現場未入力'))];
- target.innerHTML=sites.map(site=>'<div class="card" style="margin:12px 0"><h3>現場：'+esc(site)+'</h3>'+rows.filter(r=>(String(r.place||'').trim()||'現場未入力')===site).map(r=>{const i=data.items.find(x=>x.id===r.itemId);return '<div class="order-line"><strong>'+esc(i?.name||'削除された品目')+' / '+esc(i?.spec||'規格なし')+'</strong><div>数量：'+esc(r.qty)+esc(i?.unit||'')+'</div><div>使用日・積載日：'+esc(dateLabel(r.date))+'（'+esc(r.timeOfDay||'未指定')+'）</div><div>使用者：'+esc(r.person||'未入力')+'</div></div>'}).join('')+'</div>').join('');
-}
+document.querySelectorAll('.tab').forEach(b=>b.addEventListener('click',()=>{document.querySelectorAll('.tab').forEach(x=>x.classList.toggle('active',x===b));document.querySelectorAll('.panel').forEach(x=>x.classList.toggle('active',x.id===b.dataset.tab));if(b.dataset.tab==='stock'){if(!$('orderDetails').hidden){$('orderDetails').hidden=true;$('orderAlert').hidden=false;}window.scrollTo({top:0,behavior:'auto'});} if(b.dataset.tab==='move')fillMove();if(b.dataset.tab==='prepList'){renderPrepList();updatePrepTabAttention();}if(b.dataset.tab==='reserve'){fillReserve();if(lastReservedSite&&data.pendingOrderSites.includes(lastReservedSite)){$('reserveContinue').hidden=false;$('saveReservation').disabled=true;}}}));
 function dateLabel(v){const a=String(v).split('-');return a.length===3?Number(a[1])+'月'+Number(a[2])+'日':v}
-const decimalRoll=i=>['RW','GW','金網（カラー金網）'].includes(materialGroup(i));
-const validQty=(n,i,allowZero=false)=>Number.isFinite(n)&&(allowZero?n>=0:n>0)&&(decimalRoll(i)?Math.abs(n*10-Math.round(n*10))<1e-8:Number.isSafeInteger(n));
-const cleanQty=n=>Math.round(n*10)/10;
-const updateQtyInput=(id,item)=>{const e=$(id),decimal=item&&decimalRoll(item);e.step=decimal?'0.1':'1';e.min=decimal?'0.1':'1';e.placeholder=decimal?'例：0.5':'例：5';e.inputMode=decimal?'decimal':'numeric';};
-document.addEventListener('change',e=>{if(e.target.id==='moveItem')updateQtyInput('moveQty',data.items.find(i=>i.id===e.target.value));if(e.target.id==='reserveItem')updateQtyInput('reserveQty',data.items.find(i=>i.id===e.target.value));});
-const RESERVE_ORDER=['ジャケット','エルボ','断熱マット','AG断熱マット','GWP','AGGWP','GW','RW','金網（カラー金網）','スチロール','スチロールエルボ','ファインJ','ファインエルボ'];
+const RESERVE_ORDER=['ジャケット','エルボ','断熱マット','AG断熱マット','GWP','AGGWP','GW','RW','金網（カラー金網）','スチロール','スチロールエルボ','ファインJ','ファインエルボ','ポリテープ','コーキング'];
 let reserveParts=[];
 function reserveDimensions(group){
  if(group==='ジャケット'||group==='エルボ')return ['色','サイズ'];
@@ -296,11 +331,11 @@ function reservePartsFor(i,group){
 function reserveAvailability(){
  const i=data.items.find(x=>x.id===$('reserveItem').value),notice=$('reserveStockNotice');
  if(!i){notice.textContent='材料とサイズ・色などを順番に選んでください。';return}
- const reserved=cleanQty(reservationsFor(i.id).reduce((n,r)=>n+Number(r.qty||0),0));
- const available=cleanQty(Number(i.qty||0)-reserved),qty=Number($('reserveQty').value||0);
+ const reserved=reservationsFor(i.id).reduce((n,r)=>n+Number(r.qty||0),0);
+ const available=Number(i.qty||0)-reserved,qty=Number($('reserveQty').value||0);
  notice.innerHTML=`現在庫：${i.qty}${esc(i.unit)} ／ 予約済み：${reserved}${esc(i.unit)} ／ 予約可能数：${Math.max(0,available)}${esc(i.unit)}`;
  if(qty>0&&qty>available){
-  const missing=cleanQty(qty-available);
+  const missing=qty-available;
   notice.innerHTML+=`<div class="shortage">⚠ 在庫が${missing}${esc(i.unit)}不足します。発注して下さい。</div>`;
  }
 }
@@ -344,13 +379,12 @@ function renderReserveSteps(){
  const matched=complete?candidates:[];
  sel.innerHTML=matched.length?matched.map(i=>`<option value="${esc(i.id)}">${esc(i.name)} / ${esc(i.spec||'規格なし')}</option>`).join(''):'<option value="">先に材料と規格を選んでください</option>';
  sel.disabled=matched.length!==1;
- updateQtyInput('reserveQty',matched.length===1?matched[0]:null);
  reserveAvailability();
 }
 $('reserveCategory').addEventListener('change',()=>{reserveParts=[];renderReserveSteps()});
-$('reserveQty').addEventListener('input',reserveAvailability);
+$('reserveQty').addEventListener('input',reserveAvailability);$('moveItem').addEventListener('change',updateQuantitySteps);
 
-function reservationsFor(id){return data.reservations.filter(r=>r.itemId===id).sort((a,b)=>a.date.localeCompare(b.date))}
+function reservationsFor(id){return data.reservations.filter(r=>r.itemId===id&&!isPastReservation(r)&&!isLoaded(r)).sort((a,b)=>a.date.localeCompare(b.date))}
 const jacketPalette={
 'ニュークリーム':['#806B2E','#F1E5B9'],'ニューシルバー':['#4D6070','#DCE4EA'],
 'シルバー':['#263B4B','#8E9AA4'],'ステンレス':['#435663','#BAC8CF'],
@@ -358,6 +392,13 @@ const jacketPalette={
 'サンドホワイト':['#72644C','#E9E0CC'],'ホワイト':['#4F5962','#FFFFFF'],
 'ダル黒':['#252525','#3B3B3B'],'ブルー':['#1554B0','#2778E6'],
 'レンガ':['#9A3927','#BD5C3D'],'グレー':['#555E68','#969DA5']};
+const caulkingPalette={'クリア':'linear-gradient(135deg,#ffffff 0%,#d9e9ed 50%,#ffffff 100%)','アイボリー':'#eee0bd','ホワイト':'#ffffff','アルミ':'linear-gradient(120deg,#88949e,#e3e8eb,#a4afb8)','ブラック':'#242424'};
+function caulkingSwatch(i){
+ if(i.name!=='コーキング')return '';
+ const color=String(i.spec||'').replace(/^変成/,'');
+ const bg=caulkingPalette[color];
+ return bg?`<span class="jacket-swatch" aria-hidden="true" style="vertical-align:middle;margin-right:5px;background:${bg}"></span>`:'';
+}
 function coloredSpec(i){
  const spec=String(i.spec||'規格未設定');
  if(i.name!=='ジャケット'&&i.name!=='エルボ')return esc(spec);
@@ -374,7 +415,7 @@ function coloredSpec(i){
  const extra=color==='シルバー'?'background-size:6px 6px;background-position:0 0;border:1px solid #777f88;':'';
  return `<span class="jacket-color"><span class="jacket-swatch" style="background:${swatch};${extra}"></span><strong style="color:${palette[0]}">${esc(color)}</strong><span class="finish-label">${finish}</span></span> / ${esc(size)}`;
 }
-function materialGroup(i){if(isManualItem(i))return 'custom:'+i.id;if(i.name==='断熱マット'||i.name==='AG断熱マット')return i.name;if(i.name==='スチロール')return 'スチロール';if(i.name==='スチロールエルボ')return 'スチロールエルボ';if(i.name==='ジャケット')return 'ジャケット';if(i.name==='エルボ')return 'エルボ';if(i.name==='ファインエルボ')return 'ファインエルボ';if(i.name==='ファインJ')return 'ファインJ';if(i.name==='AGGWP')return 'AGGWP';if(i.name==='GW'||i.name==='RW'||i.name==='金網（カラー金網）')return i.name;if(/^旧品目：/.test(i.name))return 'その他';if(/グラスウール|GWP/i.test(i.name))return 'GWP';return 'その他'}
+function materialGroup(i){if(isManualItem(i))return 'custom:'+i.id;if(i.name==='断熱マット'||i.name==='AG断熱マット')return i.name;if(i.name==='スチロール')return 'スチロール';if(i.name==='スチロールエルボ')return 'スチロールエルボ';if(i.name==='ジャケット')return 'ジャケット';if(i.name==='エルボ')return 'エルボ';if(i.name==='ファインエルボ')return 'ファインエルボ';if(i.name==='ファインJ')return 'ファインJ';if(i.name==='ポリテープ')return 'ポリテープ';if(i.name==='コーキング')return 'コーキング';if(i.name==='AGGWP')return 'AGGWP';if(i.name==='GW'||i.name==='RW'||i.name==='金網（カラー金網）')return i.name;if(/^旧品目：/.test(i.name))return 'その他';if(/グラスウール|GWP/i.test(i.name))return 'GWP';return 'その他'}
 function prepareCustomCategoryOptions(){
  const select=$('categoryFilter'),previous=select.value;
  select.querySelectorAll('option[data-custom-category]').forEach(el=>el.remove());
@@ -405,23 +446,7 @@ function showSelectedItem(item){
  $('search').value='';
  render();
 }
-// 在庫一覧の段階選択を先に表示する（後続の在庫描画でエラーがあっても選択欄を隠さない）。
-function syncInventoryFilterSteps(){
- const group=$('categoryFilter').value;
- const density=$('densityFilter').value,finish=$('finishFilter').value;
- const meshColor=$('meshColor').value,meshGauge=$('meshGauge').value;
- $('densityFilterWrap').hidden=!['GW','断熱マット','AG断熱マット'].includes(group);
- $('finishFilterWrap').hidden=!(group==='RW'||(group==='GW'&&density));
- $('thicknessFilterWrap').hidden=!(group==='GW'||group==='RW')||!finish;
- $('meshColorWrap').hidden=group!=='金網（カラー金網）';
- $('meshGaugeWrap').hidden=group!=='金網（カラー金網）'||!meshColor||meshColor==='金網';
- $('meshRollWrap').hidden=group!=='金網（カラー金網）'||!meshColor||(meshColor!=='金網'&&!meshGauge);
- $('colorFilterWrap').hidden=!['ジャケット','エルボ'].includes(group);
-}
-$('categoryFilter').addEventListener('input',syncInventoryFilterSteps);
-$('densityFilter').addEventListener('input',syncInventoryFilterSteps);
-$('finishFilter').addEventListener('input',syncInventoryFilterSteps);
-$('categoryFilter').addEventListener('change',()=>{syncInventoryFilterSteps();$('densityFilter').value='';$('colorFilter').value='';$('finishFilter').value='';$('thicknessFilter').value='';$('meshColor').value='';$('meshGauge').value='';$('meshRoll').value='';$('search').value='';render();});
+$('categoryFilter').addEventListener('change',()=>{$('densityFilter').value='';$('colorFilter').value='';$('finishFilter').value='';$('thicknessFilter').value='';$('meshColor').value='';$('meshGauge').value='';$('meshRoll').value='';$('search').value='';render();});
 $('densityFilter').addEventListener('change',()=>{$('finishFilter').value='';$('thicknessFilter').value='';$('search').value='';render();});
 $('finishFilter').addEventListener('change',()=>{$('thicknessFilter').value='';$('search').value='';render();});
 $('thicknessFilter').addEventListener('change',()=>{$('search').value='';render();});
@@ -444,7 +469,7 @@ function updateSpecChoices(){
  sel.disabled=!group||(group==='GW'&&(!density||!finish||!thickness))||(group==='RW'&&(!finish||!thickness))||(group==='金網（カラー金網）'&&(!meshColor||(meshColor!=='金網'&&!meshGauge)||!meshRoll))||((group==='ジャケット'||group==='エルボ')&&!color)||((group==='断熱マット'||group==='AG断熱マット')&&!density);
 }
 function shortageFor(item){
- const booked=reservationsFor(item.id).filter(r=>!isPastReservation(r)).slice().sort((a,b)=>a.date.localeCompare(b.date));
+ const booked=reservationsFor(item.id).filter(r=>activeReservation(r)).slice().sort((a,b)=>a.date.localeCompare(b.date));
  const total=booked.reduce((n,r)=>n+Number(r.qty||0),0);
  if(total<=Number(item.qty))return null;
  let remaining=Number(item.qty),deadline='';
@@ -454,7 +479,7 @@ function shortageFor(item){
 function siteShortages(site){
  const result=[];
  for(const item of data.items){
-  const bookings=reservationsFor(item.id).filter(r=>!isPastReservation(r)).slice().sort((a,b)=>a.date.localeCompare(b.date)||String(a.id).localeCompare(String(b.id)));
+  const bookings=reservationsFor(item.id).filter(r=>activeReservation(r)).slice().sort((a,b)=>a.date.localeCompare(b.date)||String(a.id).localeCompare(String(b.id)));
   let available=Number(item.qty||0),missing=0,firstDate='',requested=0;
   for(const r of bookings){
    const qty=Number(r.qty||0);
@@ -475,6 +500,8 @@ if(!data.preparedReservations||typeof data.preparedReservations!=='object'||Arra
 // This keeps the preparation list consistent with the site-specific order list.
 function todayLocal(){const d=new Date();return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`}
 function isPastReservation(r){return Boolean(r.date)&&String(r.date)<todayLocal()}
+function isLoaded(r){return !!(data.loadedReservations&&data.loadedReservations[r.id])}
+function activeReservation(r){return !isPastReservation(r)&&!isLoaded(r)}
 if(!data.expiredWorkHistory||typeof data.expiredWorkHistory!=='object'||Array.isArray(data.expiredWorkHistory))data.expiredWorkHistory={};
 function archiveExpiredWork(){
  let changed=false;
@@ -485,18 +512,30 @@ function archiveExpiredWork(){
   const item=data.items.find(i=>i.id===r.itemId),site=String(r.place||'').trim();
   const orderKey=siteOrderKey(site,r.itemId),part=allocations[r.id]||{stock:0,order:Number(r.qty)||0};
   const orderRecord=data.orderedSiteItems[orderKey];
-  const qty=Number(r.qty)||0;
-  // One-time automatic stock deduction for newly expired reservations.
-  // Existing archived reservations are skipped to avoid retroactive double deductions.
-  const deducted=!!item&&qty>0;
-  if(deducted){
-   item.qty=Math.round((Number(item.qty||0)-qty)*1000000)/1000000;
-   data.history.push({time:Date.now(),type:'out',itemId:item.id,name:item.name,qty,person:r.person||'',note:'使用日・積載日経過による自動出庫（'+site+' / '+r.date+'）',unit:item.unit,automaticReservationId:r.id});
-  }
-  data.expiredWorkHistory[r.id]={date:r.date,site,person:r.person||'',name:item?.name||'削除された品目',spec:item?.spec||'',unit:item?.unit||'',qty,stock:part.stock,order:part.order,prepared:!!data.preparedReservations[r.id],ordered:part.order<=0?null:(orderRecord!==undefined&&Number(orderRecord)>0),archivedAt:new Date().toISOString(),autoDeducted:deducted};
+  data.expiredWorkHistory[r.id]={date:r.date,site,person:r.person||'',name:item?.name||'削除された品目',spec:item?.spec||'',unit:item?.unit||'',qty:Number(r.qty)||0,stock:part.stock,order:part.order,prepared:!!data.preparedReservations[r.id],loaded:isLoaded(r),ordered:part.order<=0?null:(orderRecord!==undefined&&Number(orderRecord)>0),archivedAt:new Date().toISOString()};
   changed=true;
  }
  if(changed)try{localStorage.setItem(KEY,JSON.stringify(data))}catch(e){}
+}
+// v7.9: On the first opening after the use date, automatically deduct
+// reservations that were not confirmed as loaded. The reservation ID
+// ledger prevents double deductions on later openings or branch switches.
+function autoDeductOverdueReservations(){
+ if(!data.loadedReservations||typeof data.loadedReservations!=='object')data.loadedReservations={};
+ let changed=false;
+ for(const r of data.reservations||[]){
+  if(!isPastReservation(r)||isLoaded(r))continue;
+  const item=data.items.find(i=>i.id===r.itemId);
+  const qty=Number(r.qty||0);
+  if(item&&Number.isFinite(qty)&&qty>0){
+   item.qty=Math.round(Math.max(0,Number(item.qty||0)-qty)*1000000)/1000000;
+   data.history.push({type:'out',itemId:item.id,name:item.name,spec:item.spec,unit:item.unit,qty,time:new Date().toISOString(),person:'自動処理',note:'使用日の翌日以降：未積載確認の予約を自動出庫（'+(r.place||'現場未入力')+'）'});
+  }
+  data.loadedReservations[r.id]={at:new Date().toISOString(),qty:Number(r.qty||0),automatic:true};
+  if(data.expiredWorkHistory&&data.expiredWorkHistory[r.id])data.expiredWorkHistory[r.id].autoDeducted=true;
+  changed=true;
+ }
+ if(changed)try{localStorage.setItem(KEY,JSON.stringify(data))}catch(e){alert('自動出庫の保存に失敗しました。')}
 }
 function renderExpiredWorkHistory(){
  const rows=Object.values(data.expiredWorkHistory||{}).sort((a,b)=>b.date.localeCompare(a.date)||a.site.localeCompare(b.site,'ja'));
@@ -506,7 +545,7 @@ function preparationAllocation(includePast=false){
  const allocation={};
  for(const item of data.items){
   let remaining=Math.max(0,Number(item.qty)||0);
-  const bookings=reservationsFor(item.id).filter(r=>includePast||!isPastReservation(r)).slice().sort((a,b)=>String(a.date).localeCompare(String(b.date))||String(a.id).localeCompare(String(b.id)));
+  const bookings=reservationsFor(item.id).filter(r=>includePast||activeReservation(r)).slice().sort((a,b)=>String(a.date).localeCompare(String(b.date))||String(a.id).localeCompare(String(b.id)));
   for(const r of bookings){
    const needed=Math.max(0,Number(r.qty)||0);
    const fromStock=Math.min(needed,remaining);
@@ -517,34 +556,89 @@ function preparationAllocation(includePast=false){
  return allocation;
 }
 function updatePrepTabAttention(){
- const needsPrep=(data.reservations||[]).some(r=>!isPastReservation(r)&&!data.preparedReservations[r.id]);
+ const needsPrep=(data.reservations||[]).some(r=>activeReservation(r)&&!data.preparedReservations[r.id]);
  const tab=document.querySelector('[data-tab="prepList"]');
  if(tab){
   tab.classList.toggle('order-needs-attention',needsPrep);
   tab.setAttribute('aria-label',needsPrep?'材料用意・まだ用意できていない材料があります':'材料用意');
  }
 }
+function hasUnfinishedSiteOrders(site){
+ // Use the same outstanding-order logic as the 発注 screen.
+ // An order is complete only when its current required quantity was checked.
+ if((data.pendingOrderSites||[]).includes(site))return true;
+ return siteShortages(site).some(o=>{
+  const key=siteOrderKey(site,o.item.id);
+  return !Object.prototype.hasOwnProperty.call(data.orderedSiteItems,key)||Number(data.orderedSiteItems[key])!==o.missing;
+ });
+}
 function renderPrepList(){
  const result=$('prepResult');
- const bookings=(data.reservations||[]).filter(r=>!isPastReservation(r)).slice().sort((a,b)=>String(a.date).localeCompare(String(b.date))||String(a.place||'').localeCompare(String(b.place||''),'ja')||String(a.id).localeCompare(String(b.id)));
- if(!bookings.length){result.innerHTML='<div class="empty" role="status">用意する材料はありません。</div>';return}
+ const bookings=(data.reservations||[]).filter(r=>!isPastReservation(r)).slice().sort((a,b)=>String(a.date).localeCompare(String(b.date))||String(a.place||'').localeCompare(String(b.place||''),'ja'));
+ if(!bookings.length){result.innerHTML='<div class="empty">用意する材料はありません。</div>';return}
  const allocation=preparationAllocation();
- const done=bookings.filter(r=>data.preparedReservations[r.id]).length;
- let html=`<p><strong>全現場の材料用意</strong>　用意済み ${done} / ${bookings.length} 件</p>`;
- let lastDate='',lastSite='';
+ let html='<p><strong>現場別 材料用意・積載確認</strong></p>';
+ const groups=new Map();
  for(const r of bookings){
-  const item=data.items.find(i=>i.id===r.itemId),checked=!!data.preparedReservations[r.id];
-  const parts=allocation[r.id]||{stock:0,order:Math.max(0,Number(r.qty)||0)};
-  if(r.date!==lastDate){lastDate=r.date;lastSite='';html+=`<div class="prep-date">${esc(dateLabel(r.date))}に持って行く材料</div>`}
-  const site=String(r.place||'').trim()||'現場未入力';
-  if(site!==lastSite){lastSite=site;html+=`<h3 style="margin:12px 0 6px">現場：${esc(site)}</h3>`}
-  html+=`<label class="prep-line${checked?' is-done':''}"><input type="checkbox" data-prep-id="${esc(r.id)}" ${checked?'checked':''}><span><span class="prep-name">${esc(item?.name||'削除された品目')} / ${esc(item?.spec||'規格なし')}　${Number(r.qty)||0}${esc(item?.unit||'')}（${[parts.stock>0?`在庫${parts.stock}${esc(item?.unit||'')}`:'',parts.order>0?`発注${parts.order}${esc(item?.unit||'')}`:''].filter(Boolean).join('、')}）</span><span class="meta" style="display:block">使用日・積載日：${esc(dateLabel(r.date))}（${esc(r.timeOfDay||'未指定')}） / 使用者：${esc(r.person||'未入力')}</span></span></label>`;
+  const key=JSON.stringify([r.date,String(r.place||'').trim()]);
+  if(!groups.has(key))groups.set(key,[]);
+  groups.get(key).push(r);
+ }
+ for(const [key,rows] of groups){
+  const [date,site]=JSON.parse(key);
+  const loaded=rows.every(isLoaded);
+  const prepared=rows.every(r=>!!data.preparedReservations[r.id]);
+  const orderPending=!loaded&&hasUnfinishedSiteOrders(site);
+  html+=`<div class="card"><h3>${esc(dateLabel(date))}　現場：${esc(site||'現場未入力')}</h3>`;
+  for(const r of rows){
+   const item=data.items.find(i=>i.id===r.itemId),checked=!!data.preparedReservations[r.id],parts=allocation[r.id]||{stock:0,order:0};
+   html+=`<label class="prep-line${checked?' is-done':''}"><input type="checkbox" data-prep-id="${esc(r.id)}" ${checked?'checked':''} ${isLoaded(r)?'disabled':''}><span><span class="prep-name">${esc(item?.name||'削除された品目')} / ${esc(item?.spec||'規格なし')}　${Number(r.qty)||0}${esc(item?.unit||'')}</span><span class="meta" style="display:block">使用者：${esc(r.person||'未入力')}${isLoaded(r)?' ／ 積載済み':parts.order>0?' ／ 在庫不足：'+parts.order+esc(item?.unit||''):''}</span></span></label>`;
+  }
+  html+=`<label class="prep-line" style="font-weight:750"><input type="checkbox" data-load-site-check="${esc(key)}" ${loaded?'checked':''} ${(!prepared||orderPending)&&!loaded?'disabled':''}>積載できましたか？</label>`;
+  if(!prepared&&!loaded)html+='<p class="meta">まだ材料用意されていません</p>';
+  if(orderPending)html+='<p class="meta">まだ発注が終わっていません</p>';
+  if(loaded)html+='<p class="meta">積載済み（チェックを外すと在庫数を元に戻します）</p>';
+  html+='</div>';
  }
  result.innerHTML=html;
  result.querySelectorAll('[data-prep-id]').forEach(box=>box.addEventListener('change',()=>{
-  const id=box.dataset.prepId;
-  if(!data.reservations.some(r=>r.id===id))return;
-  if(box.checked)data.preparedReservations[id]=true;else delete data.preparedReservations[id];
+  if(box.checked)data.preparedReservations[box.dataset.prepId]=true;else delete data.preparedReservations[box.dataset.prepId];
+  save();
+ }));
+ result.querySelectorAll('[data-load-site-check]').forEach(box=>box.addEventListener('change',()=>{
+  const [date,site]=JSON.parse(box.dataset.loadSiteCheck);
+  const rows=(data.reservations||[]).filter(r=>r.date===date&&String(r.place||'').trim()===site);
+  if(box.checked){
+   if(!rows.every(r=>!!data.preparedReservations[r.id])){alert('まだ材料用意されていません');box.checked=false;return}
+   if(hasUnfinishedSiteOrders(site)){alert('まだ発注が終わっていません');box.checked=false;return}
+   const pending=rows.filter(r=>!isLoaded(r));
+   if(!pending.length){render();return}
+   if(!confirm(`${site||'現場未入力'}（${date}）の材料を積載済みにしますか？\n在庫がない発注品は在庫0のままです。`)){box.checked=false;return}
+   if(!data.loadedReservations)data.loadedReservations={};
+   // Record the actual warehouse deduction, not the reservation quantity,
+   // so unloading can restore exactly what was deducted (including shortages).
+   for(const r of pending){
+    const item=data.items.find(i=>i.id===r.itemId);
+    const qty=Number(r.qty||0),stock=item?Number(item.qty||0):0;
+    const deducted=item?Math.max(0,Math.min(stock,qty)):0;
+    if(item)item.qty=Math.round(Math.max(0,stock-deducted)*1000000)/1000000;
+    data.loadedReservations[r.id]={at:new Date().toISOString(),qty,deducted};
+   }
+  }else{
+   const loadedRows=rows.filter(isLoaded);
+   if(!loadedRows.length){render();return}
+   if(!confirm(`${site||'現場未入力'}（${date}）の積載済みを取り消して、在庫数を元に戻しますか？`)){box.checked=true;return}
+   for(const r of loadedRows){
+    const item=data.items.find(i=>i.id===r.itemId),entry=data.loadedReservations[r.id];
+    // Older app versions stored only qty. Their exact warehouse deduction
+    // cannot be reconstructed; avoid fabricating inventory in that case.
+    const deducted=Number(entry?.deducted);
+    if(item&&entry&&Object.prototype.hasOwnProperty.call(entry,'deducted')&&Number.isFinite(deducted)){
+     item.qty=Math.round((Number(item.qty||0)+deducted)*1000000)/1000000;
+    }
+    delete data.loadedReservations[r.id];
+   }
+  }
   save();
  }));
 }
@@ -553,7 +647,7 @@ if(!data.orderedSiteItems||typeof data.orderedSiteItems!=='object'||Array.isArra
 function siteOrderKey(site,itemId){return JSON.stringify([site,itemId])}
 // All sites must be checked; a single site's completion never clears the global warning.
 function unplacedOrders(){
- const sites=[...new Set((data.reservations||[]).filter(r=>!isPastReservation(r)).map(r=>String(r.place||'').trim()).filter(Boolean))];
+ const sites=[...new Set((data.reservations||[]).filter(r=>activeReservation(r)).map(r=>String(r.place||'').trim()).filter(Boolean))];
  const pending=new Set(data.pendingOrderSites||[]);
  const rows=[];
  for(const site of sites){
@@ -573,7 +667,7 @@ function updateOrderTabAttention(){
 }
 function renderSiteOrders(){
  const sel=$('orderSite'),old=sel.value;
- const sites=[...new Set((data.reservations||[]).filter(r=>!isPastReservation(r)).map(r=>String(r.place||'').trim()).filter(Boolean))].sort((a,b)=>a.localeCompare(b,'ja'));
+ const sites=[...new Set((data.reservations||[]).filter(r=>activeReservation(r)).map(r=>String(r.place||'').trim()).filter(Boolean))].sort((a,b)=>a.localeCompare(b,'ja'));
  sel.innerHTML='<option value="">現場を選んでください</option>'+sites.map(v=>`<option value="${esc(v)}">${esc(v)}</option>`).join('');
  if(sites.includes(old))sel.value=old;
  const result=$('siteOrderResult'),site=sel.value;
@@ -593,7 +687,7 @@ function renderSiteOrders(){
 $('orderSite').addEventListener('change',renderSiteOrders);
 // Keep all outstanding and completed orders visible until their use date has passed.
 function activeOrderRows(){
- const sites=[...new Set((data.reservations||[]).filter(r=>!isPastReservation(r)).map(r=>String(r.place||'').trim()).filter(Boolean))];
+ const sites=[...new Set((data.reservations||[]).filter(r=>activeReservation(r)).map(r=>String(r.place||'').trim()).filter(Boolean))];
  const pending=new Set(data.pendingOrderSites||[]);
  const rows=[];
  for(const site of sites){
@@ -628,12 +722,8 @@ function renderOrders(){
 function renderOutstandingOrderDetails(){
  const rows=activeOrderRows(),list=$('orderList');
  if(!rows.length){$('orderDetails').hidden=true;return}
- const sites=[...new Set(rows.map(o=>o.site))].sort((a,b)=>a.localeCompare(b,'ja'));
- list.innerHTML=sites.map(site=>{
-  const entries=rows.filter(o=>o.site===site);
-  return '<div class="card" style="margin:12px 0"><h3>現場：'+esc(site)+'</h3>'+
-   entries.map(o=>`<div class="order-line" style="${o.ordered?'background:#edf8ee;border:2px solid #258345;border-radius:8px;padding:10px;':'padding:10px;'}"><strong>${esc(o.item.name)} / ${esc(o.item.spec||'規格なし')}</strong><div class="shortage">発注必要数：${o.missing}${esc(o.item.unit)}</div><div>使用予定日：${esc(dateLabel(o.firstDate))}まで</div><label class="order-check-row${o.ordered?' is-done':''}"><input type="checkbox" data-overview-site="${esc(site)}" data-overview-item="${esc(o.item.id)}" ${o.ordered?'checked':''}><span>${o.ordered?'✓ 発注済み（チェック済み）':'発注したらチェック'}</span></label></div>`).join('')+'</div>';
- }).join('');
+ const sorted=[...rows].sort((a,b)=>Number(a.ordered)-Number(b.ordered)||a.site.localeCompare(b.site,'ja'));
+ list.innerHTML=sorted.map(o=>`<div class="order-line"><strong>現場：${esc(o.site)}</strong><div><strong>${esc(o.item.name)} / ${esc(o.item.spec||'規格なし')}</strong></div><div class="shortage">発注必要数：${o.missing}${esc(o.item.unit)}</div><div>使用予定日：${esc(dateLabel(o.firstDate))}まで</div><label class="order-check-row${o.ordered?' is-done':''}"><input type="checkbox" data-overview-site="${esc(o.site)}" data-overview-item="${esc(o.item.id)}" ${o.ordered?'checked':''}><span>${o.ordered?'発注済':'発注したらチェック（未発注）'}</span></label></div>`).join('');
  list.querySelectorAll('[data-overview-item]').forEach(box=>box.addEventListener('change',()=>{
   const site=box.dataset.overviewSite,itemId=box.dataset.overviewItem;
   const current=siteShortages(site).find(o=>o.item.id===itemId);
@@ -646,8 +736,6 @@ function renderOutstandingOrderDetails(){
 }
 
 ['closeOrders','closeOrdersTop'].forEach(id=>$(id).addEventListener('click',()=>{$('orderDetails').hidden=true;$('orderAlert').scrollIntoView({block:'start'});}));
-// 在庫一覧タブでも「一覧に戻る」と同じく発注詳細を閉じる。
-document.querySelector('[data-tab="stock"]').addEventListener('click',()=>{if(!$('orderDetails').hidden){$('orderDetails').hidden=true;$('orderAlert').scrollIntoView({block:'start'});}});
 function isManualItem(i){return i.userCreated===true || (/^\\d{13,}[0-9a-f]+$/i.test(String(i.id||'')) && i.userCreated!==false)}
 function renderCustomItems(){
  const list=$('customItemList');
@@ -664,19 +752,34 @@ function renderCustomItems(){
   alert('追加登録した品目を取り消しました。');
  }));
 }
-function render(){renderReservedList();syncInventoryFilterSteps();try{archiveExpiredWork();renderExpiredWorkHistory();renderPrepList();updatePrepTabAttention();renderSiteOrders();updateOrderTabAttention();renderOrders();renderCustomItems();prepareCustomCategoryOptions();prepareFilters();updateSpecChoices();}catch(err){console.error('Inventory ancillary render failed',err);}const group=$('categoryFilter').value,color=$('colorFilter').value,density=$('densityFilter').value;const needGW=(group==='GW'||group==='RW');const needRW=group==='RW',needMesh=group==='金網（カラー金網）';const needDensity=(group==='断熱マット'||group==='AG断熱マット'||group==='GW');$('densityFilterWrap').hidden=!needDensity;$('finishFilterWrap').hidden=!needGW||(group==='GW'&&!density);$('thicknessFilterWrap').hidden=!needGW||!$('finishFilter').value;$('meshColorWrap').hidden=!needMesh;$('meshGaugeWrap').hidden=!needMesh||!$('meshColor').value||$('meshColor').value==='金網';$('meshRollWrap').hidden=!needMesh||!$('meshColor').value||($('meshColor').value!=='金網'&&!$('meshGauge').value);const needColor=(group==='ジャケット'||group==='エルボ');$('colorFilterWrap').hidden=!needColor;const finish=$('finishFilter').value,thickness=$('thicknessFilter').value,meshColor=$('meshColor').value,meshGauge=$('meshGauge').value,meshRoll=$('meshRoll').value;const q=$('search').value.trim();$('countItems').textContent=data.items.length;$('sumQty').textContent=data.items.reduce((s,i)=>s+i.qty,0);const filtered=(!group||(needColor&&!color)||(needDensity&&!density)||(needGW&&(!finish||!thickness))||(needMesh&&(!meshColor||(meshColor!=='金網'&&!meshGauge)||!meshRoll)))?[]:data.items.filter(i=>(group==='すべて'||materialGroup(i)===group)&&(!needColor||String(i.spec||'').split('/')[0].trim()===color)&&(!needDensity||String(i.spec||'').split('/')[0].trim()===density)&&(group!=='GW'||(String(i.spec||'').split('/')[1].trim()===finish&&String(i.spec||'').split('/')[2].trim()===thickness))&&(!needRW||(String(i.spec||'').split('/')[0].trim()===finish&&String(i.spec||'').split('/')[1].trim()===thickness))&&(!needMesh||(String(i.spec||'').split('/')[0].trim()===meshColor&&(meshColor==='金網'?String(i.spec||'').split('/').length===2:String(i.spec||'').split('/')[1].trim()===meshGauge)&&String(i.spec||'').split('/').slice(-1)[0].trim()===meshRoll))&&(!q||((needColor||needDensity)?String(i.spec||'').split('/').slice(1).join('/').trim():String(i.spec||'').trim()||i.name)===q));
+function renderReservedList(){
+ const target=$('reservedList');
+ const bookings=(data.reservations||[]).filter(r=>activeReservation(r)).slice().sort((a,b)=>String(a.place||'').localeCompare(String(b.place||''),'ja')||String(a.date||'').localeCompare(String(b.date||'')));
+ if(!bookings.length){target.innerHTML='<div class="empty">現在、予約済みの材料はありません。</div>';return;}
+ const sites=[...new Set(bookings.map(r=>String(r.place||'').trim()||'現場未入力'))];
+ target.innerHTML=sites.map(site=>`<div class="item"><h3 style="margin:4px 0 10px">現場：${esc(site)}</h3>${bookings.filter(r=>(String(r.place||'').trim()||'現場未入力')===site).map(r=>{const item=data.items.find(i=>i.id===r.itemId);return `<div class="order-line"><strong>${esc(item?.name||'削除された品目')} / ${esc(item?.spec||'規格なし')}</strong><div>数量：${Number(r.qty)||0}${esc(item?.unit||'')}</div><div>使用日：${esc(dateLabel(r.date||''))}　使用者：${esc(r.person||'未入力')}</div><button class="smallbtn" type="button" data-cancel-reservation="${esc(r.id)}">予約取消</button></div>`}).join('')}</div>`).join('');
+}
+function render(){archiveExpiredWork();autoDeductOverdueReservations();renderReservedList();renderExpiredWorkHistory();renderPrepList();updatePrepTabAttention();renderSiteOrders();updateOrderTabAttention();renderOrders();renderCustomItems();prepareCustomCategoryOptions();prepareFilters();updateSpecChoices();const group=$('categoryFilter').value,color=$('colorFilter').value,density=$('densityFilter').value;const needGW=(group==='GW'||group==='RW');const needRW=group==='RW',needMesh=group==='金網（カラー金網）';const needDensity=(group==='断熱マット'||group==='AG断熱マット'||group==='GW');$('densityFilterWrap').hidden=!needDensity;$('finishFilterWrap').hidden=!needGW||(group==='GW'&&!density);$('thicknessFilterWrap').hidden=!needGW||!$('finishFilter').value;$('meshColorWrap').hidden=!needMesh;$('meshGaugeWrap').hidden=!needMesh||!$('meshColor').value||$('meshColor').value==='金網';$('meshRollWrap').hidden=!needMesh||!$('meshColor').value||($('meshColor').value!=='金網'&&!$('meshGauge').value);const needColor=(group==='ジャケット'||group==='エルボ');$('colorFilterWrap').hidden=!needColor;const finish=$('finishFilter').value,thickness=$('thicknessFilter').value,meshColor=$('meshColor').value,meshGauge=$('meshGauge').value,meshRoll=$('meshRoll').value;const q=$('search').value.trim();$('countItems').textContent=data.items.length;$('sumQty').textContent=data.items.reduce((s,i)=>s+i.qty,0);const filtered=(!group||(needColor&&!color)||(needDensity&&!density)||(needGW&&(!finish||!thickness))||(needMesh&&(!meshColor||(meshColor!=='金網'&&!meshGauge)||!meshRoll)))?[]:data.items.filter(i=>(group==='すべて'||materialGroup(i)===group)&&(!needColor||String(i.spec||'').split('/')[0].trim()===color)&&(!needDensity||String(i.spec||'').split('/')[0].trim()===density)&&(group!=='GW'||(String(i.spec||'').split('/')[1].trim()===finish&&String(i.spec||'').split('/')[2].trim()===thickness))&&(!needRW||(String(i.spec||'').split('/')[0].trim()===finish&&String(i.spec||'').split('/')[1].trim()===thickness))&&(!needMesh||(String(i.spec||'').split('/')[0].trim()===meshColor&&(meshColor==='金網'?String(i.spec||'').split('/').length===2:String(i.spec||'').split('/')[1].trim()===meshGauge)&&String(i.spec||'').split('/').slice(-1)[0].trim()===meshRoll))&&(!q||((needColor||needDensity)?String(i.spec||'').split('/').slice(1).join('/').trim():String(i.spec||'').trim()||i.name)===q));
  if(needDensity){filtered.sort((a,b)=>{const parse=i=>{const m=String(i.spec).match(/(\d+)(A|Φ)$/);return m?[m[2]==='A'?0:1,Number(m[1])]:[2,0]};const x=parse(a),y=parse(b);return x[0]-y[0]||x[1]-y[1]})}
  if(group==='スチロール'||group==='スチロールエルボ'){
   filtered.sort((a,b)=>{const x=String(a.spec||'').match(/^(\d+)A(\d+)t$/),y=String(b.spec||'').match(/^(\d+)A(\d+)t$/);if(!x||!y)return x?-1:y?1:0;return Number(x[2])-Number(y[2])||Number(x[1])-Number(y[1])});
  }
-$('filterGuide').textContent=!group?'まず材料の種類を選んでください。':needColor&&!color?'次に色を選んでください。':group==='GW'&&!density?'次に密度（24k・32k）を選んでください。':needMesh&&!meshColor?'次に金網の色を選んでください。':needMesh&&meshColor!=='金網'&&!meshGauge?'次に3分目か5分目を選んでください。':needMesh&&!meshRoll?'次に25m巻きか50m巻きを選んでください。':needGW&&!finish?'次にALKかAGを選んでください。':needGW&&!thickness?'次に厚み（25t・50t）を選んでください。':`該当する材料：${filtered.length}品目`;$('stockList').innerHTML=filtered.length?filtered.map(i=>`<div class="item" data-stock-item="${esc(i.id)}"><div class="itemtop"><div><div class="itemname">${esc(i.name)} <span class="tag">${esc(i.unit)}</span></div><div class="meta">${coloredSpec(i)} · ${esc(i.place||'保管場所未設定')}</div>${visibleShortage(i)?`<div class="shortage">⚠ ${visibleShortage(i).missing}${esc(i.unit)}不足・発注して下さい <button type="button" class="order-link" data-show-orders>発注内容</button></div>`:''}${reservationsFor(i.id).map(r=>`<div class="reservation">● ${esc(dateLabel(r.date))} ${esc(r.place)}で${esc(r.person)}が使用予定（${r.qty}${esc(i.unit)}） <button data-cancel-reservation="${esc(r.id)}">予約取消</button></div>`).join('')}</div><div class="qty">${i.qty} ${esc(i.unit)}</div></div><div class="actions"><button class="smallbtn" data-quick="in" data-id="${i.id}">＋ 入庫</button><button class="smallbtn" data-quick="out" data-id="${i.id}">－ 出庫</button><button class="smallbtn" data-reserve="${esc(i.id)}">予約</button></div></div>`).join(''):'<div class="empty">品目がありません。「品目登録」から登録してください。</div>';
-$('historyList').innerHTML=data.history.length?[...data.history].reverse().map(h=>`<div class="item"><div class="itemtop"><div><div class="itemname">${h.type==='in'?'入庫':'出庫'}：${esc(h.name)}</div><div class="meta">${fmt(h.time)} · 入力者：${esc(h.person||'未入力')}</div><div class="meta">${esc(h.note||'')}</div></div><div class="qty" style="color:${h.type==='in'?'var(--green)':'var(--red)'}">${h.type==='in'?'+':'−'}${h.qty}</div></div></div>`).join(''):'<div class="empty">履歴はまだありません。</div>';fillMove();fillReserve();document.querySelectorAll('[data-quick]').forEach(b=>b.addEventListener('click',()=>{document.querySelector('[data-tab="move"]').click();$('moveItem').value=b.dataset.id;updateQtyInput('moveQty',data.items.find(i=>i.id===b.dataset.id));$('moveType').value=b.dataset.quick;$('moveQty').focus()}));
+$('filterGuide').textContent=!group?'まず材料の種類を選んでください。':needColor&&!color?'次に色を選んでください。':group==='GW'&&!density?'次に密度（24k・32k）を選んでください。':needMesh&&!meshColor?'次に金網の色を選んでください。':needMesh&&meshColor!=='金網'&&!meshGauge?'次に3分目か5分目を選んでください。':needMesh&&!meshRoll?'次に25m巻きか50m巻きを選んでください。':needGW&&!finish?'次にALKかAGを選んでください。':needGW&&!thickness?'次に厚み（25t・50t）を選んでください。':`該当する材料：${filtered.length}品目`;$('stockList').innerHTML=filtered.length?filtered.map(i=>`<div class="item" data-stock-item="${esc(i.id)}"><div class="itemtop"><div><div class="itemname">${caulkingSwatch(i)}${esc(i.name==='コーキング'&&String(i.spec||'').startsWith('変成')?'変成コーキング':i.name)} <span class="tag">${esc(i.unit)}</span></div><div class="meta">${coloredSpec(i)} · ${esc(i.place||'保管場所未設定')}</div>${visibleShortage(i)?`<div class="shortage">⚠ ${visibleShortage(i).missing}${esc(i.unit)}不足・発注して下さい <button type="button" class="order-link" data-show-orders>発注内容</button></div>`:''}${reservationsFor(i.id).map(r=>`<div class="reservation">● ${esc(dateLabel(r.date))} ${esc(r.place)}で${esc(r.person)}が使用予定（${r.qty}${esc(i.unit)}） <button data-cancel-reservation="${esc(r.id)}">予約取消</button></div>`).join('')}</div><div class="qty">${i.qty} ${esc(i.unit)}</div></div><div class="actions"><button class="smallbtn" data-quick="in" data-id="${i.id}">＋ 入庫</button><button class="smallbtn" data-quick="out" data-id="${i.id}">－ 出庫</button><button class="smallbtn" data-reserve="${esc(i.id)}">予約</button></div></div>`).join(''):'<div class="empty">品目がありません。「品目登録」から登録してください。</div>';
+$('historyList').innerHTML=data.history.length?[...data.history].reverse().map(h=>`<div class="item"><div class="itemtop"><div><div class="itemname">${h.type==='in'?'入庫':'出庫'}：${esc(h.name)}</div><div class="meta">${fmt(h.time)} · 入力者：${esc(h.person||'未入力')}</div><div class="meta">${esc(h.note||'')}</div></div><div class="qty" style="color:${h.type==='in'?'var(--green)':'var(--red)'}">${h.type==='in'?'+':'−'}${h.qty}</div></div></div>`).join(''):'<div class="empty">履歴はまだありません。</div>';fillMove();fillReserve();document.querySelectorAll('[data-quick]').forEach(b=>b.addEventListener('click',()=>{document.querySelector('[data-tab="move"]').click();$('moveItem').value=b.dataset.id;$('moveType').value=b.dataset.quick;updateQuantitySteps();$('moveQty').focus()}));
 document.querySelectorAll('[data-show-orders]').forEach(b=>b.addEventListener('click',()=>{$('orderDetails').hidden=false;$('orderDetails').scrollIntoView({block:'start'});}));
 document.querySelectorAll('[data-reserve]').forEach(b=>b.addEventListener('click',()=>{$('reservationSuccess').hidden=true;document.querySelector('[data-tab="reserve"]').click();fillReserve(b.dataset.reserve)}));
-document.querySelectorAll('[data-cancel-reservation]').forEach(b=>b.addEventListener('click',()=>{if(!confirm('この予約を取り消しますか？'))return;data.reservations=data.reservations.filter(r=>r.id!==b.dataset.cancelReservation);data.pendingOrderSites=data.pendingOrderSites.filter(site=>data.reservations.some(r=>String(r.place||'').trim()===site));$('reservationSuccess').hidden=true;save()}));
+document.querySelectorAll('[data-cancel-reservation]').forEach(b=>b.addEventListener('click',()=>{if(isLoaded(data.reservations.find(r=>r.id===b.dataset.cancelReservation)||{})){alert('積載済みの予約は取り消せません。入庫・出庫の記録で調整してください。');return;}if(!confirm('この予約を取り消しますか？'))return;data.reservations=data.reservations.filter(r=>r.id!==b.dataset.cancelReservation);data.pendingOrderSites=data.pendingOrderSites.filter(site=>data.reservations.some(r=>String(r.place||'').trim()===site));$('reservationSuccess').hidden=true;save()}));
 }
 
-function fillMove(){const old=$('moveItem').value;$('moveItem').innerHTML=data.items.map(i=>`<option value="${i.id}">${esc(i.name)} / ${esc(i.spec||'規格なし')}（在庫 ${i.qty}${esc(i.unit)}）</option>`).join('');if(data.items.some(i=>i.id===old))$('moveItem').value=old;if(!data.items.length)$('moveItem').innerHTML='<option value="">先に品目を登録してください</option>';updateQtyInput('moveQty',data.items.find(i=>i.id===$('moveItem').value))}
+function allowsDecimal(item){return !!item && (['GWP','グラスウール保温筒','スチロール','GW','RW','金網（カラー金網）','断熱マット','AG断熱マット'].includes(item.name)||item.unit==='巻');}
+function validQuantity(qty,item){return Number.isFinite(qty)&&qty>0&&(allowsDecimal(item)?Math.round(qty*10)===qty*10:Number.isSafeInteger(qty));}
+function updateQuantitySteps(){
+ const move=data.items.find(i=>i.id===$('moveItem').value),reserve=data.items.find(i=>i.id===$('reserveItem').value);
+ for(const [el,item] of [[$('moveQty'),move],[$('reserveQty'),reserve]]){
+  const decimal=allowsDecimal(item);el.step=decimal?'0.1':'1';el.min=decimal?'0.1':'1';
+ }
+}
+function fillMove(){const old=$('moveItem').value;$('moveItem').innerHTML=data.items.map(i=>`<option value="${i.id}">${esc(i.name)} / ${esc(i.spec||'規格なし')}（在庫 ${i.qty}${esc(i.unit)}）</option>`).join('');if(data.items.some(i=>i.id===old))$('moveItem').value=old;if(!data.items.length)$('moveItem').innerHTML='<option value="">先に品目を登録してください</option>';updateQuantitySteps()}
 let lastReservedSite='';
 function validateReserveDate(){
  const date=$('reserveDate').value;
@@ -689,14 +792,14 @@ $('reserveDate').addEventListener('input',validateReserveDate);
 $('reserveDate').addEventListener('change',validateReserveDate);
 validateReserveDate();
 $('saveReservation').addEventListener('click',()=>{
- const item=data.items.find(i=>i.id===$('reserveItem').value),date=$('reserveDate').value,place=$('reservePlace').value.trim(),person=$('reservePerson').value.trim(),qty=Number($('reserveQty').value),timeOfDay=$('reserveTime').value;
- if(!item||!date||!timeOfDay||!place||!person){alert('材料・使用日・朝夕・現場名・使用者を入力してください');return}
+ const item=data.items.find(i=>i.id===$('reserveItem').value),date=$('reserveDate').value,place=$('reservePlace').value.trim(),person=$('reservePerson').value.trim(),qty=Number($('reserveQty').value);
+ if(!item||!date||!place||!person){alert('材料・使用日・現場名・使用者を入力してください');return}
  if(!validateReserveDate()){$('reserveDate').focus();return}
- if(!validQty(qty,item)){alert(decimalRoll(item)?'予約数量は0.1巻単位で入力してください':'予約数量は1以上の整数にしてください');return}
- data.reservations.push({id:Date.now().toString(36)+Math.random().toString(36).slice(2),itemId:item.id,date,timeOfDay,place,person,qty});
+ if(!validQuantity(qty,item)){alert(allowsDecimal(item)?'予約数量は0.1刻みの正の数にしてください':'予約数量は1以上の整数にしてください');return}
+ data.reservations.push({id:Date.now().toString(36)+Math.random().toString(36).slice(2),itemId:item.id,date,place,person,qty});
  if(!data.pendingOrderSites.includes(place))data.pendingOrderSites.push(place);
  lastReservedSite=place;
- $('reserveQty').value='1';
+ $('reserveQty').value='';
  $('reserveContinueQuestion').textContent=place+'の現場では、他に予約する材料はありませんか？';
  $('reserveContinue').hidden=false;
  $('saveReservation').disabled=true;
@@ -712,7 +815,7 @@ $('finishSiteReservation').addEventListener('click',()=>{
  const site=lastReservedSite;
  data.pendingOrderSites=data.pendingOrderSites.filter(p=>p!==site);
  $('reserveContinue').hidden=true;$('saveReservation').disabled=false;
- $('reservePlace').value='';$('reserveTime').value='';$('reservePerson').value='';$('reserveQty').value='1';
+ $('reservePlace').value='';$('reservePerson').value='';$('reserveQty').value='';
  $('categoryFilter').value='';$('search').value='';
  save();document.querySelector('[data-tab="stock"]').click();
  const banner=$('reservationSuccess');
@@ -721,7 +824,7 @@ $('finishSiteReservation').addEventListener('click',()=>{
  banner.hidden=false;window.scrollTo({top:0,behavior:'auto'});
 });
 
-$('search').addEventListener('change',render);$('addItem').addEventListener('click',()=>{const name=$('itemName').value.trim(),qty=Number($('itemInitial').value),min=$('itemMin').value;if(!name){alert('品名を入力してください');return}if(!validQty(qty,{name},true)){alert('初期在庫数を確認してください');return}if(min!==''&&!validQty(Number(min),{name},true)){alert('在庫不足の目安は0以上の整数を入力してください');return}if(data.items.some(i=>i.name===name&&i.spec===$('itemSpec').value.trim())){alert('同じ品名・規格がすでに登録されています');return}const item={id:Date.now().toString()+Math.random().toString(16).slice(2),userCreated:true,name,spec:$('itemSpec').value.trim(),unit:$('itemUnit').value,place:$('itemPlace').value.trim(),qty,min};data.items.push(item);if(qty>0)data.history.push({time:Date.now(),type:'in',itemId:item.id,name:item.name,qty,person:'初期登録',note:'初期在庫',unit:item.unit});$('itemName').value='';$('itemSpec').value='';$('itemPlace').value='';$('itemInitial').value='0';$('itemMin').value='';save();alert('品目を登録しました')});
-$('saveMove').addEventListener('click',()=>{const i=data.items.find(x=>x.id===$('moveItem').value),type=$('moveType').value,qty=Number($('moveQty').value);if(!i){alert('先に品目を登録してください');return}if(!validQty(qty,i)){alert(decimalRoll(i)?'数量は0.1巻単位で入力してください':'数量は1以上の整数を入力してください');return}if(type==='out'&&qty>i.qty){alert(`在庫が足りません。現在庫：${i.qty}${i.unit}`);return}i.qty=cleanQty(i.qty+(type==='in'?qty:-qty));data.history.push({time:Date.now(),type,itemId:i.id,name:i.name,qty,person:$('movePerson').value.trim(),note:$('moveNote').value.trim(),unit:i.unit});$('moveQty').value='';$('moveNote').value='';$('search').value='';save();showSelectedItem(i);document.querySelector('[data-tab="stock"]').click();const banner=$('reservationSuccess');banner.textContent='✓ '+(type==='in'?'入庫':'出庫')+'を登録しました：'+i.name+' / '+(i.spec||'規格なし')+'（'+qty+i.unit+'） 現在庫：'+i.qty+i.unit;banner.hidden=false;const target=[...document.querySelectorAll('[data-stock-item]')].find(el=>el.dataset.stockItem===i.id);if(target){document.querySelectorAll('.just-reserved').forEach(el=>el.classList.remove('just-reserved'));target.classList.add('just-reserved');requestAnimationFrame(()=>target.scrollIntoView({behavior:'auto',block:'center'}));}else{window.scrollTo(0,0)}});
-$('exportBtn').addEventListener('click',()=>{const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='在庫管理バックアップ_'+new Date().toISOString().slice(0,10)+'.json';a.click();URL.revokeObjectURL(url)});$('importFile').addEventListener('change',async e=>{const f=e.target.files[0];if(!f)return;try{const x=JSON.parse(await f.text());if(!Array.isArray(x.items)||!Array.isArray(x.history))throw new Error();if(!Array.isArray(x.reservations))x.reservations=[];if(!confirm('現在のデータを読み込んだデータで置き換えます。よろしいですか？'))return;data=x;save();alert('読み込みました')}catch(err){alert('読み込めないファイルです')}e.target.value=''});$('clearHistory').addEventListener('click',()=>{if(confirm('履歴をすべて削除します。よろしいですか？')){data.history=[];save()}});render();if(!storageAvailable)alert('この開き方では端末への保存が使えない可能性があります。動作確認用としてお使いください。');
+$('search').addEventListener('change',render);$('addItem').addEventListener('click',()=>{const name=$('itemName').value.trim(),qty=Number($('itemInitial').value),min=$('itemMin').value;if(!name){alert('品名を入力してください');return}if(!Number.isInteger(qty)||qty<0){alert('初期在庫数は0以上の整数を入力してください');return}if(min!==''&&(!Number.isInteger(Number(min))||Number(min)<0)){alert('在庫不足の目安は0以上の整数を入力してください');return}if(data.items.some(i=>i.name===name&&i.spec===$('itemSpec').value.trim())){alert('同じ品名・規格がすでに登録されています');return}const item={id:Date.now().toString()+Math.random().toString(16).slice(2),userCreated:true,name,spec:$('itemSpec').value.trim(),unit:$('itemUnit').value,place:$('itemPlace').value.trim(),qty,min};data.items.push(item);if(qty>0)data.history.push({time:Date.now(),type:'in',itemId:item.id,name:item.name,qty,person:'初期登録',note:'初期在庫',unit:item.unit});$('itemName').value='';$('itemSpec').value='';$('itemPlace').value='';$('itemInitial').value='0';$('itemMin').value='';save();alert('品目を登録しました')});
+$('saveMove').addEventListener('click',()=>{const i=data.items.find(x=>x.id===$('moveItem').value),type=$('moveType').value,qty=Number($('moveQty').value);if(!i){alert('先に品目を登録してください');return}if(!validQuantity(qty,i)){alert(allowsDecimal(i)?'数量は0.1刻みの正の数を入力してください':'数量は1以上の整数を入力してください');return}if(type==='out'&&qty>i.qty){alert(`在庫が足りません。現在庫：${i.qty}${i.unit}`);return}i.qty=Math.round((Number(i.qty)+(type==='in'?qty:-qty))*10)/10;data.history.push({time:Date.now(),type,itemId:i.id,name:i.name,qty,person:$('movePerson').value.trim(),note:$('moveNote').value.trim(),unit:i.unit});$('moveQty').value='';$('moveNote').value='';$('search').value='';save();showSelectedItem(i);document.querySelector('[data-tab="stock"]').click();const banner=$('reservationSuccess');banner.textContent='✓ '+(type==='in'?'入庫':'出庫')+'を登録しました：'+i.name+' / '+(i.spec||'規格なし')+'（'+qty+i.unit+'） 現在庫：'+i.qty+i.unit;banner.hidden=false;const target=[...document.querySelectorAll('[data-stock-item]')].find(el=>el.dataset.stockItem===i.id);if(target){document.querySelectorAll('.just-reserved').forEach(el=>el.classList.remove('just-reserved'));target.classList.add('just-reserved');requestAnimationFrame(()=>target.scrollIntoView({behavior:'auto',block:'center'}));}else{window.scrollTo(0,0)}});
+$('exportBtn').addEventListener('click',()=>{const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=BRANCHES[currentBranch].name+'_在庫管理バックアップ_'+new Date().toISOString().slice(0,10)+'.json';a.click();URL.revokeObjectURL(url)});$('importFile').addEventListener('change',async e=>{const f=e.target.files[0];if(!f)return;try{const x=JSON.parse(await f.text());if(!Array.isArray(x.items)||!Array.isArray(x.history))throw new Error();if(!Array.isArray(x.reservations))x.reservations=[];if(!confirm(BRANCHES[currentBranch].name+'のデータを読み込んだデータで置き換えます。よろしいですか？'))return;data=x;save();alert('読み込みました')}catch(err){alert('読み込めないファイルです')}e.target.value=''});$('clearHistory').addEventListener('click',()=>{if(confirm('履歴をすべて削除します。よろしいですか？')){data.history=[];save()}});render();if(!storageAvailable)alert('この開き方では端末への保存が使えない可能性があります。動作確認用としてお使いください。');
 </script></body></html>
