@@ -300,6 +300,7 @@ function switchBranch(branch){
  currentBranch=branch;KEY=next.key;data=incoming;
  ensurePolyTapeItems(data);
  ensureCaulkingItems(data);
+ ensureGWBoardItems(data);
  if(!Array.isArray(data.reservations))data.reservations=[];
  if(!Array.isArray(data.pendingOrderSites))data.pendingOrderSites=[];
  if(!data.preparedReservations||typeof data.preparedReservations!=='object')data.preparedReservations={};
@@ -466,6 +467,7 @@ function prepareFilters(){
 }
 function showSelectedItem(item){
  $('categoryFilter').value=materialGroup(item);
+ updateGWBoardFacingOptions();
  $('densityFilter').value=(item.name==='断熱マット'||item.name==='AG断熱マット'||item.name==='GW')?String(item.spec||'').split('/')[0].trim():'';
  $('finishFilter').value=(item.name==='GW')?String(item.spec||'').split('/')[1].trim():((item.name==='RW'||item.name==='GW板')?String(item.spec||'').split('/')[0].trim():'');
  $('thicknessFilter').value=(item.name==='GW')?String(item.spec||'').split('/')[2].trim():((item.name==='RW'||item.name==='GW板')?String(item.spec||'').split('/')[1].trim():'');
@@ -830,6 +832,17 @@ $('addLadder').addEventListener('click',()=>{
  $('ladderQty').value='1';save();
 });
 
+function ensureGWBoardItems(target){
+ if(!Array.isArray(target.items))return;
+ let changed=false;
+ for(const facing of ['生','AG','白クロス','黒クロス'])for(const thickness of ['25t','50t']){
+  const spec=facing+' / '+thickness;
+  if(!target.items.some(i=>i.name==='GW板'&&i.spec===spec)){
+   target.items.push({id:'gwboard_v747_'+({生:'raw',AG:'ag','白クロス':'white','黒クロス':'black'}[facing])+'_'+thickness,name:'GW板',spec,unit:'枚',place:'',qty:0,min:''});changed=true;
+  }
+ }
+ return changed;
+}
 function updateGWBoardFacingOptions(){
  const sel=$('finishFilter'),isBoard=$('categoryFilter').value==='GW板';
  const options=isBoard?['生','AG','白クロス','黒クロス']:['ALK','AG'];
