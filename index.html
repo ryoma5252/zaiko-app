@@ -833,11 +833,8 @@ if(!data.orderedSiteItems||typeof data.orderedSiteItems!=='object'||Array.isArra
 function siteOrderKey(site,itemId){return JSON.stringify([site,itemId])}
 if(!data.orderPersons||typeof data.orderPersons!=='object'||Array.isArray(data.orderPersons))data.orderPersons={};
 function recordOrderCheck(box,key,qty){
- if(box.checked){
-  const person=prompt('発注者の名前を入力してください',data.orderPersons[key]||'');
-  if(person===null||!person.trim()){box.checked=false;if(person!==null)alert('発注者の名前を入力してください');return false}
-  data.orderedSiteItems[key]=qty;data.orderPersons[key]=person.trim();
- }else{delete data.orderedSiteItems[key];delete data.orderPersons[key]}
+ if(box.checked){data.orderedSiteItems[key]=qty;}
+ else{delete data.orderedSiteItems[key];}
  save();return true;
 }
 // All sites must be checked; a single site's completion never clears the global warning.
