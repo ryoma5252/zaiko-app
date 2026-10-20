@@ -34,7 +34,7 @@ body:not(.branch-toyonaka):not(.branch-sakai) .tab.order-needs-attention.active{
 <script>
 let KEY='inventoryPrototype_v08';let data={items:[],history:[],reservations:[]};try{const saved=localStorage.getItem(KEY);if(saved)data=JSON.parse(saved);else if(localStorage.getItem('inventoryPrototype_v07')||localStorage.getItem('inventoryPrototype_v06')){data=JSON.parse(localStorage.getItem('inventoryPrototype_v07')||localStorage.getItem('inventoryPrototype_v06'));localStorage.setItem(KEY,JSON.stringify(data))}else{
 const gwSizes=['15A20t','20A20t','32A20t','40A20t','50A20t','65A20t','80A20t','100A25t','125A25t','150A25t','15A30t','20A30t','25A30t','32A30t','40A30t','50A30t','65A30t','80A30t'];
-const jacketColors=['ニュークリーム','ニューシルバー','シルバー','ステンレス','ガルバ','クリーム','サンドホワイト','ホワイト','ダル黒','ブルー','レンガ','グレー'];
+const jacketColors=['ニュークリーム','ニューシルバー','シルバー','ステンレス','ガルバ','クリーム','アイボリー','キャメル','こげ茶','新茶','サンドホワイト','ホワイト','ダル黒','ブルー','レンガ','グレー'];
 const jacketSizes=['No.0','No.1','No.2s','No.2','No.3s','No.3','No.4s','No.4','No.5s','No.5','No.6s','No.6','No.7s','No.7','No.8s','No.8','No.9s','No.9','No.10','No.11','No.13','No.14','No.15','No.16','No.17','No.18','No.19s','No.19','No.20','No.21','No.22s','No.22','No.23','No.24','No.25','No.26','No.27','No.28','No.29','No.30','No.31','No.32','No.33','No.34','No.35','No.36'];
 const starter=[];
 gwSizes.forEach(spec=>starter.push({name:'グラスウール保温筒',spec,unit:'本'}));
@@ -349,7 +349,7 @@ ensureHachimakiItems(data);
 function ensureSpecialJackets(branchData){
  if(!Array.isArray(branchData.items))branchData.items=[];
  const sizes=['No.0','No.1','No.2s','No.2','No.3s','No.3','No.4s','No.4','No.5s','No.5','No.6s','No.6','No.7s','No.7','No.8s','No.8','No.9s','No.9','No.10','No.11','No.13','No.14','No.15','No.16','No.17','No.18','No.19s','No.19','No.20','No.21','No.22s','No.22','No.23','No.24','No.25','No.26','No.27','No.28','No.29','No.30','No.31','No.32','No.33','No.34','No.35','No.36'];
- for(const [c,color] of ['2B','アルミ'].entries())for(const [n,size] of sizes.entries()){
+ for(const [c,color] of ['2B','アルミ','アイボリー','キャメル','こげ茶','新茶'].entries())for(const [n,size] of sizes.entries()){
   const spec=color+' / '+size;
   if(!branchData.items.some(i=>i.name==='ジャケット'&&i.spec===spec))branchData.items.push({id:'special_jacket_'+c+'_'+n,name:'ジャケット',spec,unit:'本',place:'',qty:0,min:''});
  }
@@ -491,6 +491,8 @@ const jacketPalette={
 'ニュークリーム':['#806B2E','#F1E5B9'],'ニューシルバー':['#4D6070','#DCE4EA'],
 'シルバー':['#263B4B','#8E9AA4'],'ステンレス':['#435663','#BAC8CF'],
 'ガルバ':['#506574','#B7C8D0'],'クリーム':['#846B22','#F6E7B0'],
+'アイボリー':['#73654D','#EEE2C5'],'キャメル':['#6D4D2C','#C5A16D'],
+'こげ茶':['#F0E2CD','#68462E'],'新茶':['#F0E2CD','#38271E'],
 'サンドホワイト':['#72644C','#E9E0CC'],'ホワイト':['#4F5962','#FFFFFF'],
 'ダル黒':['#252525','#3B3B3B'],'ブルー':['#1554B0','#2778E6'],
 'レンガ':['#9A3927','#BD5C3D'],'グレー':['#555E68','#969DA5'],
