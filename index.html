@@ -748,6 +748,14 @@ function hasUnfinishedSiteOrders(site){
   return !Object.prototype.hasOwnProperty.call(data.orderedSiteItems,key)||Number(data.orderedSiteItems[key])!==o.missing;
  });
 }
+function reservationNotes(rows){
+ const notes=[...new Set(rows.map(r=>String(r.specialNote||'').trim()).filter(Boolean))];
+ return notes;
+}
+function notesHtml(rows){
+ const notes=reservationNotes(rows);
+ return notes.map(note=>`<p class="meta" style="white-space:pre-wrap;color:#c62828;font-weight:700;background:#fff1f1;border:1px solid #e6a0a0;border-radius:8px;padding:10px"><strong>特記事項：</strong>${esc(note)}</p>`).join('');
+}
 function renderPrepList(){
  const result=$('prepResult');
  const bookings=(data.reservations||[]).filter(r=>!isPastReservation(r)).slice().sort((a,b)=>String(a.date).localeCompare(String(b.date))||String(a.place||'').localeCompare(String(b.place||''),'ja'));
@@ -765,7 +773,7 @@ function renderPrepList(){
   const loaded=rows.every(isLoaded);
   const prepared=rows.every(r=>!!data.preparedReservations[r.id]);
   const orderPending=!loaded&&hasUnfinishedSiteOrders(site);
-  html+=`<div class="card"><h3>積載日：${esc(dateLabel(date))}（${timeSlot?esc(timeSlot):'朝・夕未設定'}）　現場：${esc(site||'現場未入力')}</h3>${(data.siteSpecialNotes||{})[site]?`<p class="meta" style="white-space:pre-wrap;color:#c62828;font-weight:700;background:#fff1f1;border:1px solid #e6a0a0;border-radius:8px;padding:10px"><strong>特記事項：</strong>${esc(data.siteSpecialNotes[site])}</p>`:''}`;
+  html+=`<div class="card"><h3>積載日：${esc(dateLabel(date))}（${timeSlot?esc(timeSlot):'朝・夕未設定'}）　現場：${esc(site||'現場未入力')}</h3>${notesHtml(rows)}`;
   for(const r of rows){
    const item=data.items.find(i=>i.id===r.itemId),checked=!!data.preparedReservations[r.id],parts=allocation[r.id]||{stock:0,order:0};
    html+=`<label class="prep-line${checked?' is-done':''}"><input type="checkbox" data-prep-id="${esc(r.id)}" ${checked?'checked':''} ${isLoaded(r)?'disabled':''}><span><span class="prep-name">${esc(item?.name||'削除された品目')} / ${esc(item?.spec||'規格なし')}　${Number(r.qty)||0}${esc(item?.unit||'')}</span><span class="meta" style="display:block">使用者：${esc(r.person||'未入力')}${isLoaded(r)?' ／ 積載済み':parts.order>0?' ／ 在庫不足：'+parts.order+esc(item?.unit||''):''}</span></span></label>`;
@@ -911,7 +919,7 @@ function renderOutstandingOrderDetails(){
  const rows=activeOrderRows(),list=$('orderList');
  if(!rows.length){$('orderDetails').hidden=true;return}
  const sorted=[...rows].sort((a,b)=>a.site.localeCompare(b.site,'ja')||String(a.firstDate||'').localeCompare(String(b.firstDate||''))||String(a.item.name||'').localeCompare(String(b.item.name||''),'ja')||String(a.item.spec||'').localeCompare(String(b.item.spec||''),'ja'));
- list.innerHTML=sorted.map((o,index)=>`<div class="order-line"><strong>現場：${esc(o.site)}　発注者：${esc(o.orderPerson||'未入力')}</strong>${(data.siteSpecialNotes||{})[o.site]&&(!index||sorted[index-1].site!==o.site)?`<p class="meta" style="white-space:pre-wrap;color:#c62828;font-weight:700;background:#fff1f1;border:1px solid #e6a0a0;border-radius:8px;padding:10px"><strong>特記事項：</strong>${esc(data.siteSpecialNotes[o.site])}</p>`:''}<div><strong>${esc(o.item.name)} / ${esc(o.item.spec||'規格なし')}</strong></div><div class="shortage">発注必要数：${o.missing}${esc(o.item.unit)}</div><div>使用予定日：${esc(dateLabel(o.firstDate))}まで</div><label class="order-check-row${o.ordered?' is-done':''}"><input type="checkbox" data-overview-site="${esc(o.site)}" data-overview-item="${esc(o.item.id)}" ${o.ordered?'checked':''}><span>${o.ordered?'発注済':'発注したらチェック（未発注）'}</span></label></div>`).join('');
+ list.innerHTML=sorted.map((o,index)=>`<div class="order-line"><strong>現場：${esc(o.site)}　発注者：${esc(o.orderPerson||'未入力')}</strong>${notesHtml((data.reservations||[]).filter(r=>activeReservation(r)&&String(r.place||'').trim()===o.site&&r.itemId===o.item.id))}<div><strong>${esc(o.item.name)} / ${esc(o.item.spec||'規格なし')}</strong></div><div class="shortage">発注必要数：${o.missing}${esc(o.item.unit)}</div><div>使用予定日：${esc(dateLabel(o.firstDate))}まで</div><label class="order-check-row${o.ordered?' is-done':''}"><input type="checkbox" data-overview-site="${esc(o.site)}" data-overview-item="${esc(o.item.id)}" ${o.ordered?'checked':''}><span>${o.ordered?'発注済':'発注したらチェック（未発注）'}</span></label></div>`).join('');
  list.querySelectorAll('[data-overview-item]').forEach(box=>box.addEventListener('change',()=>{
   const site=box.dataset.overviewSite,itemId=box.dataset.overviewItem;
   const current=siteShortages(site).find(o=>o.item.id===itemId);
@@ -943,7 +951,7 @@ function renderReservedList(){
  const bookings=(data.reservations||[]).filter(r=>activeReservation(r)).slice().sort((a,b)=>String(a.place||'').localeCompare(String(b.place||''),'ja')||String(a.date||'').localeCompare(String(b.date||'')));
  if(!bookings.length){target.innerHTML='<div class="empty">現在、予約済みの材料はありません。</div>';return;}
  const sites=[...new Set(bookings.map(r=>String(r.place||'').trim()||'現場未入力'))];
- target.innerHTML=sites.map(site=>`<div class="item"><h3 style="margin:4px 0 10px">現場：${esc(site)}</h3>${(data.siteSpecialNotes||{})[site]?`<div class="meta" style="white-space:pre-wrap"><strong>特記事項：</strong>${esc(data.siteSpecialNotes[site])}</div>`:""}${bookings.filter(r=>(String(r.place||'').trim()||'現場未入力')===site).map(r=>{const item=data.items.find(i=>i.id===r.itemId);return `<div class="order-line"><strong>${esc(item?.name||'削除された品目')} / ${esc(item?.spec||'規格なし')}</strong><div>数量：${Number(r.qty)||0}${esc(item?.unit||'')}</div><div>積載日：${esc(dateLabel(r.date||''))}（${esc(r.timeSlot||'朝・夕未設定')}）　使用者：${esc(r.person||'未入力')}</div><button class="smallbtn" type="button" data-cancel-reservation="${esc(r.id)}">予約取消</button></div>`}).join('')}</div>`).join('');
+ target.innerHTML=sites.map(site=>`<div class="item"><h3 style="margin:4px 0 10px">現場：${esc(site)}</h3>${notesHtml(bookings.filter(r=>(String(r.place||'').trim()||'現場未入力')===site))}${bookings.filter(r=>(String(r.place||'').trim()||'現場未入力')===site).map(r=>{const item=data.items.find(i=>i.id===r.itemId);return `<div class="order-line"><strong>${esc(item?.name||'削除された品目')} / ${esc(item?.spec||'規格なし')}</strong><div>数量：${Number(r.qty)||0}${esc(item?.unit||'')}</div><div>積載日：${esc(dateLabel(r.date||''))}（${esc(r.timeSlot||'朝・夕未設定')}）　使用者：${esc(r.person||'未入力')}</div><button class="smallbtn" type="button" data-cancel-reservation="${esc(r.id)}">予約取消</button></div>`}).join('')}</div>`).join('');
 }
 
 // 脚立積載は拠点ごとに保存する（他の材料データと同じ端末内）。
@@ -1043,7 +1051,10 @@ $('saveReservation').addEventListener('click',()=>{
  if(!item||!date||!place||!person){alert('材料・使用日・現場名・使用者を入力してください');return}
  if(!validateReserveDate()){$('reserveDate').focus();return}
  if(!validQuantity(qty,item)){alert(allowsDecimal(item)?'予約数量は0.1刻みの正の数にしてください':'予約数量は1以上の整数にしてください');return}
- data.reservations.push({id:Date.now().toString(36)+Math.random().toString(36).slice(2),itemId:item.id,date,place,person,qty,timeSlot:$('reserveTimeSlot').value});
+ const newReservation={id:Date.now().toString(36)+Math.random().toString(36).slice(2),itemId:item.id,date,place,person,qty,timeSlot:$('reserveTimeSlot').value};
+ data.reservations.push(newReservation);
+ if(!Array.isArray(data.pendingSpecialNoteIds))data.pendingSpecialNoteIds=[];
+ data.pendingSpecialNoteIds.push(newReservation.id);
  if(!data.pendingOrderSites.includes(place))data.pendingOrderSites.push(place);
  lastReservedSite=place;
  $('reserveQty').value='';
@@ -1075,7 +1086,8 @@ $('confirmSiteReservation').addEventListener('click',()=>{
  if(!site)return;
  if(!data.siteSpecialNotes||typeof data.siteSpecialNotes!=='object')data.siteSpecialNotes={};
  const memo=$('reserveSpecialMemo').value.trim();
- if(memo)data.siteSpecialNotes[site]=memo;else delete data.siteSpecialNotes[site];
+ for(const r of data.reservations){if((data.pendingSpecialNoteIds||[]).includes(r.id)&&String(r.place||'').trim()===site){if(memo)r.specialNote=memo;else delete r.specialNote;}}
+ data.pendingSpecialNoteIds=[];
  data.pendingOrderSites=data.pendingOrderSites.filter(p=>p!==site);
  $('reserveContinue').hidden=true;$('reserveSpecialNotes').hidden=true;$('reserveSpecialMemo').value='';$('saveReservation').disabled=false;
  $('reservePlace').value='';$('reservePerson').value='';$('reserveQty').value='';
