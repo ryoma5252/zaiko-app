@@ -1078,11 +1078,13 @@ $('confirmSiteReservation').addEventListener('click',()=>{
  $('reserveContinue').hidden=true;$('reserveSpecialNotes').hidden=true;$('reserveSpecialMemo').value='';$('saveReservation').disabled=false;
  $('reservePlace').value='';$('reservePerson').value='';$('reserveQty').value='';
  $('categoryFilter').value='';$('search').value='';
- save();document.querySelector('[data-tab="stock"]').click();
+ try{localStorage.setItem(KEY,JSON.stringify(data))}catch(e){alert('保存できません。ブラウザの保存設定を確認してください。');return}
+ document.querySelector('[data-tab="stock"]').click();
  const banner=$('reservationSuccess');
  const needed=data.items.map(visibleShortage).filter(Boolean).filter(o=>o.booked.some(r=>String(r.place||'').trim()===site));
  banner.textContent=needed.length?`⚠ ${site}の予約が完了しました。発注が必要な材料があります。`:`✓ ${site}の予約が完了しました。`;
  banner.hidden=false;window.scrollTo({top:0,behavior:'auto'});
+ requestAnimationFrame(()=>{setTimeout(render,0)});
 });
 
 $('search').addEventListener('change',render);$('addItem').addEventListener('click',()=>{const name=$('itemName').value.trim(),qty=Number($('itemInitial').value),min=$('itemMin').value;if(!name){alert('品名を入力してください');return}if(!Number.isInteger(qty)||qty<0){alert('初期在庫数は0以上の整数を入力してください');return}if(min!==''&&(!Number.isInteger(Number(min))||Number(min)<0)){alert('在庫不足の目安は0以上の整数を入力してください');return}if(data.items.some(i=>i.name===name&&i.spec===$('itemSpec').value.trim())){alert('同じ品名・規格がすでに登録されています');return}const item={id:Date.now().toString()+Math.random().toString(16).slice(2),userCreated:true,name,spec:$('itemSpec').value.trim(),unit:$('itemUnit').value,place:$('itemPlace').value.trim(),qty,min};data.items.push(item);if(qty>0)data.history.push({time:Date.now(),type:'in',itemId:item.id,name:item.name,qty,person:'初期登録',note:'初期在庫',unit:item.unit});$('itemName').value='';$('itemSpec').value='';$('itemPlace').value='';$('itemInitial').value='0';$('itemMin').value='';save();alert('品目を登録しました')});
