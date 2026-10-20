@@ -36,7 +36,7 @@ body:not(.branch-toyonaka):not(.branch-sakai) .tab.order-needs-attention.active{
 let KEY='inventoryPrototype_v08';let data={items:[],history:[],reservations:[]};try{const saved=localStorage.getItem(KEY);if(saved)data=JSON.parse(saved);else if(localStorage.getItem('inventoryPrototype_v07')||localStorage.getItem('inventoryPrototype_v06')){data=JSON.parse(localStorage.getItem('inventoryPrototype_v07')||localStorage.getItem('inventoryPrototype_v06'));localStorage.setItem(KEY,JSON.stringify(data))}else{
 const gwSizes=['15A20t','20A20t','32A20t','40A20t','50A20t','65A20t','80A20t','100A25t','125A25t','150A25t','15A30t','20A30t','25A30t','32A30t','40A30t','50A30t','65A30t','80A30t'];
 const jacketColors=['ニュークリーム','ニューシルバー','シルバー','ステンレス','ガルバ','クリーム','アイボリー','キャメル','こげ茶','新茶','サンドホワイト','ホワイト','ダル黒','ブルー','レンガ','グレー'];
-const jacketSizes=['No.0','No.1','No.2s','No.2','No.3s','No.3','No.4s','No.4','No.5s','No.5','No.6s','No.6','No.7s','No.7','No.8s','No.8','No.9s','No.9','No.10','No.11','No.13','No.14','No.15','No.16','No.17','No.18','No.19s','No.19','No.20','No.21','No.22s','No.22','No.23','No.24','No.25','No.26','No.27','No.28','No.29','No.30','No.31','No.32','No.33','No.34','No.35','No.36'];
+const jacketSizes=['No.0','No.1','No.2s','No.2','No.3s','No.3','No.4','No.5s','No.5','No.6s','No.6','No.7s','No.7','No.8s','No.8','No.9','No.10','No.11','No.13','No.14','No.15','No.16','No.17','No.18','No.19s','No.19','No.20','No.21','No.22s','No.22','No.23','No.24','No.25','No.26','No.27','No.28','No.29','No.30','No.31','No.32','No.33','No.34','No.35','No.36'];
 const starter=[];
 gwSizes.forEach(spec=>starter.push({name:'グラスウール保温筒',spec,unit:'本'}));
 jacketColors.forEach(color=>jacketSizes.forEach(size=>starter.push({name:'ジャケット',spec:color+' / '+size,unit:'本'})));
@@ -45,7 +45,7 @@ jacketColors.forEach(color=>jacketSizes.forEach(size=>starter.push({name:'エル
 data.items=starter.map((x,n)=>({id:'starter'+(n+1),name:x.name,spec:x.spec,unit:x.unit,place:'',qty:0,min:''}));localStorage.setItem(KEY,JSON.stringify(data))}}catch(e){}
 if(!Array.isArray(data.reservations))data.reservations=[];
 // Existing users retain their quantities, history and reservations. Add only missing gray jackets.
-const graySizes=['No.0','No.1','No.2s','No.2','No.3s','No.3','No.4s','No.4','No.5s','No.5','No.6s','No.6','No.7s','No.7','No.8s','No.8','No.9s','No.9','No.10','No.11','No.13','No.14','No.15','No.16','No.17','No.18','No.19s','No.19','No.20','No.21','No.22s','No.22','No.23','No.24','No.25','No.26','No.27','No.28','No.29','No.30','No.31','No.32','No.33','No.34','No.35','No.36'];
+const graySizes=['No.0','No.1','No.2s','No.2','No.3s','No.3','No.4','No.5s','No.5','No.6s','No.6','No.7s','No.7','No.8s','No.8','No.9','No.10','No.11','No.13','No.14','No.15','No.16','No.17','No.18','No.19s','No.19','No.20','No.21','No.22s','No.22','No.23','No.24','No.25','No.26','No.27','No.28','No.29','No.30','No.31','No.32','No.33','No.34','No.35','No.36'];
 if(Array.isArray(data.items)){
  let changed=false;
  graySizes.forEach((size,n)=>{const spec='グレー / '+size;if(!data.items.some(i=>i.name==='ジャケット'&&i.spec===spec)){
@@ -422,7 +422,7 @@ function ensureHachimakiItems(branchData){
 ensureHachimakiItems(data);
 function ensureSpecialJackets(branchData){
  if(!Array.isArray(branchData.items))branchData.items=[];
- const sizes=['No.0','No.1','No.2s','No.2','No.3s','No.3','No.4s','No.4','No.5s','No.5','No.6s','No.6','No.7s','No.7','No.8s','No.8','No.9s','No.9','No.10','No.11','No.13','No.14','No.15','No.16','No.17','No.18','No.19s','No.19','No.20','No.21','No.22s','No.22','No.23','No.24','No.25','No.26','No.27','No.28','No.29','No.30','No.31','No.32','No.33','No.34','No.35','No.36'];
+ const sizes=['No.0','No.1','No.2s','No.2','No.3s','No.3','No.4','No.5s','No.5','No.6s','No.6','No.7s','No.7','No.8s','No.8','No.9','No.10','No.11','No.13','No.14','No.15','No.16','No.17','No.18','No.19s','No.19','No.20','No.21','No.22s','No.22','No.23','No.24','No.25','No.26','No.27','No.28','No.29','No.30','No.31','No.32','No.33','No.34','No.35','No.36'];
  for(const [c,color] of ['2B','アルミ','アイボリー','キャメル','こげ茶','新茶'].entries())for(const [n,size] of sizes.entries()){
   const spec=color+' / '+size;
   if(!branchData.items.some(i=>i.name==='ジャケット'&&i.spec===spec))branchData.items.push({id:'special_jacket_'+c+'_'+n,name:'ジャケット',spec,unit:'本',place:'',qty:0,min:''});
@@ -477,15 +477,15 @@ try{localStorage.setItem(KEY,JSON.stringify(data))}catch(e){}
 // Each branch has independent inventory, reservations, preparation, orders and history.
 function ensureAllSmallJacketSizes(branchData){
  if(!Array.isArray(branchData.items))branchData.items=[];
- const suffixSizes=Array.from({length:37},(_,n)=>'No.'+n+'s');
- for(const name of ['ジャケット','エルボ']){
-  const colors=[...new Set(branchData.items.filter(i=>i.name===name&&String(i.spec||'').includes(' / ')).map(i=>String(i.spec).split(' / ')[0].trim()))];
-  for(const color of colors)for(const size of suffixSizes){
-   const spec=color+' / '+size;
-   if(branchData.items.some(i=>i.name===name&&i.spec===spec))continue;
-   branchData.items.push({id:'small_'+(name==='ジャケット'?'j':'e')+'_'+color+'_'+size,name,spec,unit:name==='ジャケット'?'本':'個',place:'',qty:0,min:''});
-  }
- }
+ const valid=new Set(["No.2s","No.3s","No.5s","No.6s","No.7s","No.8s","No.19s","No.22s"]);
+ branchData.items=branchData.items.filter(i=>{
+  if(i.name!=='ジャケット'&&i.name!=='エルボ')return true;
+  const match=String(i.spec||'').match(/\/\s*(No\.\d+s)$/i);
+  if(!match||valid.has(match[1].toLowerCase().replace(/^no\./,'No.')))return true;
+  // Preserve historical stock, movements and reservation links for any used item.
+  const used=Number(i.qty||0)!==0||(branchData.history||[]).some(h=>h.itemId===i.id||h.id===i.id)||(branchData.reservations||[]).some(x=>x.itemId===i.id);
+  return used;
+ });
 }
 ensureAllSmallJacketSizes(data);
 const branchCatalog=JSON.parse(JSON.stringify(data.items));
