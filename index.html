@@ -456,7 +456,7 @@ function reserveAvailability(){
 function fillReserve(preferredId){
  const category=$('reserveCategory'),previous=category.value;
  const groups=[...new Set(data.items.map(materialGroup))].filter(Boolean);
- const ordered=[...RESERVE_ORDER.filter(x=>groups.includes(x)),...groups.filter(x=>!RESERVE_ORDER.includes(x)&&x!=='すべて')];
+ const ordered=[...RESERVE_ORDER.filter(x=>groups.includes(x)),...groups.filter(x=>!RESERVE_ORDER.includes(x)&&x!=='すべて'&&x!=='その他')];
  category.innerHTML='<option value="">材料を選んでください</option>'+ordered.map(g=>`<option value="${esc(g)}">${esc(g.startsWith('custom:')?(data.items.find(i=>materialGroup(i)===g)?.name||g):g)}</option>`).join('');
  const preferred=data.items.find(i=>i.id===preferredId);
  category.value=preferred?materialGroup(preferred):ordered.includes(previous)?previous:'';
@@ -556,6 +556,7 @@ function prepareCustomCategoryOptions(){
   option.dataset.customCategory='1';
   select.appendChild(option);
  });
+ select.querySelectorAll('option[value="その他"]').forEach(el=>el.remove());
  if([...select.options].some(o=>o.value===previous))select.value=previous;
 }
 function prepareFilters(){
