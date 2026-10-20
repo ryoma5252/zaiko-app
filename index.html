@@ -316,16 +316,18 @@ function ensureVinylTapeItems(branchData){
 }
 ensureVinylTapeItems(data);
 function ensureSpindlePinItems(branchData){
+ for(const item of (branchData.items||[])){if(item.name==='スピンドル鋲')item.unit='ケース';}
  if(!Array.isArray(branchData.items))branchData.items=[];
  for(const length of ['38mm','65mm']){
-  if(!branchData.items.some(i=>i.name==='スピンドル鋲'&&i.spec===length))branchData.items.push({id:'spindle_pin_'+length,name:'スピンドル鋲',spec:length,unit:'本',place:'',qty:0,min:''});
+  if(!branchData.items.some(i=>i.name==='スピンドル鋲'&&i.spec===length))branchData.items.push({id:'spindle_pin_'+length,name:'スピンドル鋲',spec:length,unit:'ケース',place:'',qty:0,min:''});
  }
 }
 ensureSpindlePinItems(data);
 function ensureATPinItems(branchData){
+ for(const item of (branchData.items||[])){if(item.name==='ATピン')item.unit='ケース';}
  if(!Array.isArray(branchData.items))branchData.items=[];
  for(const length of ['17mm','38mm','49mm']){
-  if(!branchData.items.some(i=>i.name==='ATピン'&&i.spec===length))branchData.items.push({id:'at_pin_'+length,name:'ATピン',spec:length,unit:'本',place:'',qty:0,min:''});
+  if(!branchData.items.some(i=>i.name==='ATピン'&&i.spec===length))branchData.items.push({id:'at_pin_'+length,name:'ATピン',spec:length,unit:'ケース',place:'',qty:0,min:''});
  }
 }
 ensureATPinItems(data);
@@ -949,7 +951,7 @@ document.querySelectorAll('[data-reserve]').forEach(b=>b.addEventListener('click
 document.querySelectorAll('[data-cancel-reservation]').forEach(b=>b.addEventListener('click',()=>{if(isLoaded(data.reservations.find(r=>r.id===b.dataset.cancelReservation)||{})){alert('積載済みの予約は取り消せません。入庫・出庫の記録で調整してください。');return;}if(!confirm('この予約を取り消しますか？'))return;data.reservations=data.reservations.filter(r=>r.id!==b.dataset.cancelReservation);data.pendingOrderSites=data.pendingOrderSites.filter(site=>data.reservations.some(r=>String(r.place||'').trim()===site));$('reservationSuccess').hidden=true;save()}));
 }
 
-function allowsDecimal(item){return !!item && (['GWP','グラスウール保温筒','スチロール','GW','RW','金網（カラー金網）','断熱マット','AG断熱マット'].includes(item.name)||item.unit==='巻');}
+function allowsDecimal(item){return !!item && (['GWP','グラスウール保温筒','スチロール','GW','RW','金網（カラー金網）','断熱マット','AG断熱マット'].includes(item.name)||item.unit==='巻'||item.unit==='ケース');}
 function validQuantity(qty,item){return Number.isFinite(qty)&&qty>0&&(allowsDecimal(item)?Math.round(qty*10)===qty*10:Number.isSafeInteger(qty));}
 function updateQuantitySteps(){
  const move=data.items.find(i=>i.id===$('moveItem').value),reserve=data.items.find(i=>i.id===$('reserveItem').value);
