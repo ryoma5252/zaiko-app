@@ -49,7 +49,26 @@ jacketColors.forEach(color=>jacketSizes.forEach(size=>starter.push({name:'ジャ
 jacketColors.forEach(color=>jacketSizes.forEach(size=>starter.push({name:'エルボ',spec:color+' / '+size,unit:'個'})));
 [['ファインカバエルボ','個'],['ALGC保温筒','本']].forEach(x=>starter.push({name:x[0],spec:'',unit:x[1]}));
 data.items=starter.map((x,n)=>({id:'starter'+(n+1),name:x.name,spec:x.spec,unit:x.unit,place:'',qty:0,min:''}));localStorage.setItem(KEY,JSON.stringify(data))}}catch(e){}
-if(!Array.isArray(data.reservations))data.reservations=[];
+function roundQuantity(value){return Math.round((Number(value)||0)*1000000)/1000000}
+function normalizeInventoryData(target){
+ if(!target||!Array.isArray(target.items)||!Array.isArray(target.history))throw Error('invalid inventory');
+ const ids=new Set();
+ for(const item of target.items){
+  if(!item||typeof item.id!=='string'||!item.id||ids.has(item.id)||typeof item.name!=='string'||!Number.isFinite(Number(item.qty))||Number(item.qty)<0)throw Error('invalid item');
+  ids.add(item.id);item.qty=roundQuantity(item.qty);
+ }
+ for(const key of ['reservations','pendingOrderSites','ladderLoads'])if(!Array.isArray(target[key]))target[key]=[];
+ for(const key of ['preparedReservations','expiredWorkHistory','orderedSiteItems','loadedReservations','orderPersons']){
+  if(!target[key]||typeof target[key]!=='object'||Array.isArray(target[key]))target[key]={};
+ }
+ const reservationIds=new Set();
+ for(const r of target.reservations){
+  if(!r||typeof r.id!=='string'||!r.id||reservationIds.has(r.id)||typeof r.itemId!=='string'||typeof r.date!=='string'||!/^\d{4}-\d{2}-\d{2}$/.test(r.date)||!Number.isFinite(Number(r.qty))||Number(r.qty)<=0)throw Error('invalid reservation');
+  reservationIds.add(r.id);r.qty=roundQuantity(r.qty);
+ }
+ return target;
+}
+normalizeInventoryData(data);
 // Existing users retain their quantities, history and reservations. Add only missing gray jackets.
 const graySizes=['No.0','No.1','No.2s','No.2','No.3s','No.3','No.4','No.5s','No.5','No.6s','No.6','No.7s','No.7','No.8s','No.8','No.9','No.10','No.11','No.13','No.14','No.15','No.16','No.17','No.18','No.19s','No.19','No.20','No.21','No.22s','No.22','No.23','No.24','No.25','No.26','No.27','No.28','No.29','No.30','No.31','No.32','No.33','No.34','No.35','No.36'];
 if(Array.isArray(data.items)){
@@ -505,7 +524,7 @@ function switchBranch(branch){
  if(!BRANCHES[branch]||branch===currentBranch)return;
  const next=BRANCHES[branch];
  let incoming;
- try{const raw=localStorage.getItem(next.key);incoming=raw?JSON.parse(raw):freshBranchData();if(!Array.isArray(incoming.items)||!Array.isArray(incoming.history))throw Error('invalid');}
+ try{const raw=localStorage.getItem(next.key);incoming=raw?JSON.parse(raw):freshBranchData();normalizeInventoryData(incoming);}
  catch(e){alert('営業所データを読み込めませんでした。切り替えは中止しました。');return;}
  currentBranch=branch;KEY=next.key;data=incoming;
  currentReservationBatchIds=[];lastReservedSite='';
@@ -597,11 +616,11 @@ function reserveAvailability(){
  const decimalRules=[...new Set(possible.map(x=>allowsDecimal(x)))];
  label.textContent=units.length===1&&decimalRules.length===1?`予約数量（${units[0]}単位・${decimalRules[0]?'小数点以下も入力可能':'小数点以下は入力不可'}）`:'予約数量（材料を選択すると単位・小数点以下の可否を表示）';
  if(!i){notice.textContent='材料とサイズ・色などを順番に選んでください。';return}
- const reserved=reservationsFor(i.id).reduce((n,r)=>n+Number(r.qty||0),0);
- const available=Number(i.qty||0)-reserved,qty=Number($('reserveQty').value||0);
+ const reserved=roundQuantity(reservationsFor(i.id).reduce((n,r)=>n+Number(r.qty||0),0));
+ const available=roundQuantity(Number(i.qty||0)-reserved),qty=Number($('reserveQty').value||0);
  notice.innerHTML=`現在庫：${i.qty}${esc(i.unit)} ／ 予約済み：${reserved}${esc(i.unit)} ／ 予約可能数：${Math.max(0,available)}${esc(i.unit)}`;
  if(qty>0&&qty>available){
-  const missing=qty-available;
+  const missing=roundQuantity(qty-available);
   notice.innerHTML+=`<div class="shortage">⚠ 在庫が${missing}${esc(i.unit)}不足します。発注して下さい。</div>`;
  }
 }
@@ -612,7 +631,7 @@ function fillReserve(preferredId){
  category.innerHTML='<option value="">材料を選んでください</option>'+ordered.map(g=>`<option value="${esc(g)}">${esc(g.startsWith('custom:')?(data.items.find(i=>materialGroup(i)===g)?.name||g):g)}</option>`).join('');
  const preferred=data.items.find(i=>i.id===preferredId);
  category.value=preferred?materialGroup(preferred):ordered.includes(previous)?previous:'';
- reserveParts=preferred?reservePartsFor(preferred,category.value):[];
+ reserveParts=preferred?reservePartsFor(preferred,category.value):(category.value===previous?reserveParts:[]);
  renderReserveSteps();
 }
 function updateMetalSizeGuides(){const stock=$('categoryFilter').value,reserve=$('reserveCategory').value;document.querySelectorAll('.metalSizeGuide').forEach((el,i)=>{el.hidden=el.getAttribute('data-metal-guide')!==(i<2?stock:reserve);});}
@@ -801,11 +820,11 @@ function updateSpecChoices(){
 }
 function shortageFor(item){
  const booked=reservationsFor(item.id).filter(r=>activeReservation(r)).slice().sort((a,b)=>a.date.localeCompare(b.date));
- const total=booked.reduce((n,r)=>n+Number(r.qty||0),0);
+ const total=roundQuantity(booked.reduce((n,r)=>n+Number(r.qty||0),0));
  if(total<=Number(item.qty))return null;
  let remaining=Number(item.qty),deadline='';
- for(const r of booked){remaining-=Number(r.qty||0);if(remaining<0){deadline=r.date;break}}
- return {item,missing:total-Number(item.qty),deadline,booked,total};
+ for(const r of booked){remaining=roundQuantity(remaining-Number(r.qty||0));if(remaining<0){deadline=r.date;break}}
+ return {item,missing:roundQuantity(total-Number(item.qty)),deadline,booked,total};
 }
 function siteShortages(site){
  const result=[];
@@ -814,11 +833,11 @@ function siteShortages(site){
   let available=Number(item.qty||0),missing=0,firstDate='',requested=0;
   for(const r of bookings){
    const qty=Number(r.qty||0);
-   const unmet=Math.max(0,qty-Math.max(0,available));
-   available=Math.max(0,available-qty);
+   const unmet=roundQuantity(Math.max(0,qty-Math.max(0,available)));
+   available=roundQuantity(Math.max(0,available-qty));
    if(String(r.place||'').trim()===site){
-    requested+=qty;
-    if(unmet>0){missing+=unmet;if(!firstDate||r.date<firstDate)firstDate=r.date}
+    requested=roundQuantity(requested+qty);
+    if(unmet>0){missing=roundQuantity(missing+unmet);if(!firstDate||r.date<firstDate)firstDate=r.date}
    }
   }
   if(missing>0)result.push({item,missing,firstDate,requested});
@@ -841,7 +860,8 @@ function archiveExpiredWork(){
  for(const r of data.reservations||[]){
   if(!isPastReservation(r)||data.expiredWorkHistory[r.id])continue;
   const item=data.items.find(i=>i.id===r.itemId),site=String(r.place||'').trim();
-  const orderKey=siteOrderKey(site,r.itemId),part=allocations[r.id]||{stock:0,order:Number(r.qty)||0};
+  const orderKey=siteOrderKey(site,r.itemId),entry=data.loadedReservations[r.id];
+  const part=entry?.allocation||allocations[r.id]||(entry&&Number.isFinite(Number(entry.deducted))?{stock:roundQuantity(entry.deducted),order:roundQuantity(Math.max(0,Number(r.qty)-Number(entry.deducted)))}:{stock:0,order:Number(r.qty)||0});
   const orderRecord=data.orderedSiteItems[orderKey];
   data.expiredWorkHistory[r.id]={date:r.date,site,person:r.person||'',name:item?.name||'削除された品目',spec:item?.spec||'',unit:item?.unit||'',qty:Number(r.qty)||0,stock:part.stock,order:part.order,prepared:!!data.preparedReservations[r.id],loaded:isLoaded(r),ordered:part.order<=0?null:(orderRecord!==undefined&&Number(orderRecord)>0),archivedAt:new Date().toISOString()};
   changed=true;
@@ -857,12 +877,13 @@ function autoDeductOverdueReservations(){
  for(const r of data.reservations||[]){
   if(!isPastReservation(r)||isLoaded(r))continue;
   const item=data.items.find(i=>i.id===r.itemId);
-  const qty=Number(r.qty||0);
+  const qty=Number(r.qty||0),deducted=item?roundQuantity(Math.min(Math.max(0,Number(item.qty)||0),Math.max(0,qty))):0;
+  const allocation=data.expiredWorkHistory?.[r.id];
   if(item&&Number.isFinite(qty)&&qty>0){
    item.qty=Math.round(Math.max(0,Number(item.qty||0)-qty)*1000000)/1000000;
-   data.history.push({type:'out',itemId:item.id,name:item.name,spec:item.spec,unit:item.unit,qty,time:new Date().toISOString(),person:'自動処理',note:'使用日の翌日以降：未積載確認の予約を自動出庫（'+(r.place||'現場未入力')+'）'});
+   data.history.push({type:'out',itemId:item.id,name:item.name,spec:item.spec,unit:item.unit,qty:deducted,requestedQty:qty,time:new Date().toISOString(),person:'自動処理',note:'使用日の翌日以降：未積載確認の予約を自動出庫（'+(r.place||'現場未入力')+'）'});
   }
-  data.loadedReservations[r.id]={at:new Date().toISOString(),qty:Number(r.qty||0),automatic:true};
+  data.loadedReservations[r.id]={at:new Date().toISOString(),qty:Number(r.qty||0),deducted,allocation:allocation?{stock:allocation.stock,order:allocation.order}:undefined,automatic:true};
   if(data.expiredWorkHistory&&data.expiredWorkHistory[r.id])data.expiredWorkHistory[r.id].autoDeducted=true;
   changed=true;
  }
@@ -876,12 +897,12 @@ function preparationAllocation(includePast=false){
  const allocation={};
  for(const item of data.items){
   let remaining=Math.max(0,Number(item.qty)||0);
-  const bookings=reservationsFor(item.id).filter(r=>includePast||activeReservation(r)).slice().sort((a,b)=>String(a.date).localeCompare(String(b.date))||String(a.id).localeCompare(String(b.id)));
+  const bookings=(data.reservations||[]).filter(r=>r.itemId===item.id&&!isLoaded(r)&&(includePast?!data.expiredWorkHistory?.[r.id]:activeReservation(r))).slice().sort((a,b)=>String(a.date).localeCompare(String(b.date))||String(a.id).localeCompare(String(b.id)));
   for(const r of bookings){
    const needed=Math.max(0,Number(r.qty)||0);
    const fromStock=Math.min(needed,remaining);
-   allocation[r.id]={stock:fromStock,order:needed-fromStock};
-   remaining-=fromStock;
+   allocation[r.id]={stock:roundQuantity(fromStock),order:roundQuantity(needed-fromStock)};
+   remaining=roundQuantity(remaining-fromStock);
   }
  }
  return allocation;
@@ -930,7 +951,7 @@ function renderPrepList(){
   const orderPending=!loaded&&hasUnfinishedSiteOrders(site);
   html+=`<div class="card"><h3>積載日：${esc(dateLabel(date))}（${timeSlot?esc(timeSlot):'朝・夕未設定'}）　現場：${esc(site||'現場未入力')}</h3>${notesHtml(rows)}`;
   for(const r of rows){
-   const item=data.items.find(i=>i.id===r.itemId),checked=!!data.preparedReservations[r.id],parts=allocation[r.id]||(isLoaded(r)?{stock:Number(data.loadedReservations[r.id]?.deducted)||0,order:Math.max(0,(Number(r.qty)||0)-(Number(data.loadedReservations[r.id]?.deducted)||0))}:{stock:0,order:Number(r.qty)||0});
+   const item=data.items.find(i=>i.id===r.itemId),checked=!!data.preparedReservations[r.id],parts=allocation[r.id]||data.loadedReservations[r.id]?.allocation||(isLoaded(r)?{stock:roundQuantity(data.loadedReservations[r.id]?.deducted),order:roundQuantity(Math.max(0,(Number(r.qty)||0)-(Number(data.loadedReservations[r.id]?.deducted)||0)))}:{stock:0,order:Number(r.qty)||0});
    html+=`<label class="prep-line${checked?' is-done':''}"><input type="checkbox" data-prep-id="${esc(r.id)}" ${checked?'checked':''} ${isLoaded(r)?'disabled':''}><span><span class="prep-name">${esc(item?.name||'削除された品目')} / ${esc(item?.spec||'規格なし')}　${Number(r.qty)||0}${esc(item?.unit||'')}（在庫:${parts.stock} 発注:${parts.order}）</span><span class="meta" style="display:block">使用者：${esc(r.person||'未入力')}${isLoaded(r)?' ／ 積載済み':parts.order>0?' ／ 在庫不足：'+parts.order+esc(item?.unit||''):''}</span></span></label>`;
   }
   html+=`<label class="prep-line" style="font-weight:750"><input type="checkbox" data-load-site-check="${esc(key)}" ${loaded?'checked':''} ${(!prepared||orderPending)&&!loaded?'disabled':''}>積載できましたか？</label><p class="meta">積載チェックすると在庫数に反映されます。押し忘れた場合でも次の日には在庫数に反映されます。</p>`;
@@ -956,6 +977,7 @@ function renderPrepList(){
    if(!pending.length){render();return}
    if(!confirm(`${site||'現場未入力'}（${date}）の材料を積載済みにしますか？\n在庫がない発注品は在庫0のままです。`)){box.checked=false;return}
    if(!data.loadedReservations)data.loadedReservations={};
+   const loadAllocation=preparationAllocation();
    // Record the actual warehouse deduction, not the reservation quantity,
    // so unloading can restore exactly what was deducted (including shortages).
    for(const r of pending){
@@ -963,7 +985,7 @@ function renderPrepList(){
     const qty=Number(r.qty||0),stock=item?Number(item.qty||0):0;
     const deducted=item?Math.max(0,Math.min(stock,qty)):0;
     if(item)item.qty=Math.round(Math.max(0,stock-deducted)*1000000)/1000000;
-    data.loadedReservations[r.id]={at:new Date().toISOString(),qty,deducted};
+    data.loadedReservations[r.id]={at:new Date().toISOString(),qty,deducted,allocation:loadAllocation[r.id]};
    }
   }else{
    const loadedRows=rows.filter(isLoaded);
@@ -1054,7 +1076,7 @@ function renderOrders(){
  alertBox.classList.toggle('all-ordered',rows.length>0&&remaining.length===0);
  if(!rows.length){alertBox.innerHTML='';details.hidden=true;list.innerHTML='';return}
  if(remaining.length){
-  const total=remaining.reduce((n,o)=>n+o.missing,0);
+  const total=roundQuantity(remaining.reduce((n,o)=>n+o.missing,0));
   alertBox.innerHTML=`⚠ 発注して下さい：未発注 ${remaining.length}件（不足合計 ${total}）<button id="showOrders" type="button">発注内容を見る</button>`;
  }else{
   alertBox.innerHTML='✓ すべて発注済みです <button id="showOrders" type="button">発注内容を見る</button>';
@@ -1071,7 +1093,7 @@ function renderOutstandingOrderDetails(){
  const rows=activeOrderRows(),list=$('orderList');
  if(!rows.length){$('orderDetails').hidden=true;return}
  const sorted=[...rows].sort((a,b)=>a.site.localeCompare(b.site,'ja')||String(a.firstDate||'').localeCompare(String(b.firstDate||''))||String(a.item.name||'').localeCompare(String(b.item.name||''),'ja')||String(a.item.spec||'').localeCompare(String(b.item.spec||''),'ja'));
- list.innerHTML=sorted.map((o,index)=>`<div class="order-line"><strong>現場：${esc(o.site)}　発注者：${esc(o.orderPerson||'未入力')}</strong>${notesHtml((data.reservations||[]).filter(r=>activeReservation(r)&&String(r.place||'').trim()===o.site&&r.itemId===o.item.id))}${(!index||sorted[index-1].site!==o.site)&&(data.siteSpecialNotes||{})[o.site]?`<p class="meta" style="white-space:pre-wrap;color:#c62828;font-weight:700;background:#fff1f1;border:1px solid #e6a0a0;border-radius:8px;padding:10px"><strong>特記事項：</strong>${esc(data.siteSpecialNotes[o.site])}</p>`:''}<div><strong>${esc(o.item.name)} / ${esc(o.item.spec||'規格なし')}</strong></div><div class="shortage">発注必要数：${o.missing}${esc(o.item.unit)}</div><div>使用予定日：${esc(dateLabel(o.firstDate))}まで</div><label class="order-check-row${o.ordered?' is-done':''}"><input type="checkbox" data-overview-site="${esc(o.site)}" data-overview-item="${esc(o.item.id)}" ${o.ordered?'checked':''}><span>${o.ordered?'発注済':'発注したらチェック（未発注）'}</span></label></div>`).join('');
+ list.innerHTML=sorted.map((o,index)=>`<div class="order-line"><strong>現場：${esc(o.site)}　発注者：${esc(o.orderPerson||'未入力')}</strong>${notesHtml((data.reservations||[]).filter(r=>activeReservation(r)&&String(r.place||'').trim()===o.site&&r.itemId===o.item.id))}<div><strong>${esc(o.item.name)} / ${esc(o.item.spec||'規格なし')}</strong></div><div class="shortage">発注必要数：${o.missing}${esc(o.item.unit)}</div><div>使用予定日：${esc(dateLabel(o.firstDate))}まで</div><label class="order-check-row${o.ordered?' is-done':''}"><input type="checkbox" data-overview-site="${esc(o.site)}" data-overview-item="${esc(o.item.id)}" ${o.ordered?'checked':''}><span>${o.ordered?'発注済':'発注したらチェック（未発注）'}</span></label></div>`).join('');
  list.querySelectorAll('[data-overview-item]').forEach(box=>box.addEventListener('change',()=>{
   const site=box.dataset.overviewSite,itemId=box.dataset.overviewItem;
   const current=siteShortages(site).find(o=>o.item.id===itemId);
@@ -1308,5 +1330,5 @@ $('confirmSiteReservation').addEventListener('click',()=>{
 
 $('search').addEventListener('change',render);$('addItem').addEventListener('click',()=>{const name=$('itemName').value.trim(),qty=Number($('itemInitial').value),min=$('itemMin').value;if(!name){alert('品名を入力してください');return}if(!Number.isInteger(qty)||qty<0){alert('初期在庫数は0以上の整数を入力してください');return}if(min!==''&&(!Number.isInteger(Number(min))||Number(min)<0)){alert('在庫不足の目安は0以上の整数を入力してください');return}if(data.items.some(i=>i.name===name&&i.spec===$('itemSpec').value.trim())){alert('同じ品名・規格がすでに登録されています');return}const item={id:Date.now().toString()+Math.random().toString(16).slice(2),userCreated:true,name,spec:$('itemSpec').value.trim(),unit:$('itemUnit').value,place:$('itemPlace').value.trim(),qty,min};data.items.push(item);if(qty>0)data.history.push({time:Date.now(),type:'in',itemId:item.id,name:item.name,qty,person:'初期登録',note:'初期在庫',unit:item.unit});$('itemName').value='';$('itemSpec').value='';$('itemPlace').value='';$('itemInitial').value='0';$('itemMin').value='';save();alert('品目を登録しました')});
 $('saveMove').addEventListener('click',()=>{const i=data.items.find(x=>x.id===$('moveItem').value),type=$('moveType').value,qty=Number($('moveQty').value);if(!i){alert('先に品目を登録してください');return}if(!validQuantity(qty,i)){alert(allowsDecimal(i)?'数量は0.1刻みの正の数を入力してください':'数量は1以上の整数を入力してください');return}if(type==='out'&&qty>i.qty){alert(`在庫が足りません。現在庫：${i.qty}${i.unit}`);return}i.qty=Math.round((Number(i.qty)+(type==='in'?qty:-qty))*10)/10;data.history.push({time:Date.now(),type,itemId:i.id,name:i.name,qty,person:$('movePerson').value.trim(),note:$('moveNote').value.trim(),unit:i.unit});$('moveQty').value='';$('moveNote').value='';$('search').value='';save();showSelectedItem(i);document.querySelector('[data-tab="stock"]').click();const banner=$('reservationSuccess');banner.textContent='✓ '+(type==='in'?'入庫':'出庫')+'を登録しました：'+i.name+' / '+(i.spec||'規格なし')+'（'+qty+i.unit+'） 現在庫：'+i.qty+i.unit;banner.hidden=false;const target=[...document.querySelectorAll('[data-stock-item]')].find(el=>el.dataset.stockItem===i.id);if(target){document.querySelectorAll('.just-reserved').forEach(el=>el.classList.remove('just-reserved'));target.classList.add('just-reserved');requestAnimationFrame(()=>target.scrollIntoView({behavior:'auto',block:'center'}));}else{window.scrollTo(0,0)}});
-$('exportBtn').addEventListener('click',()=>{const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=BRANCHES[currentBranch].name+'_在庫管理バックアップ_'+new Date().toISOString().slice(0,10)+'.json';a.click();URL.revokeObjectURL(url)});$('importFile').addEventListener('change',async e=>{const f=e.target.files[0];if(!f)return;try{const x=JSON.parse(await f.text());if(!Array.isArray(x.items)||!Array.isArray(x.history))throw new Error();if(!Array.isArray(x.reservations))x.reservations=[];if(!confirm(BRANCHES[currentBranch].name+'のデータを読み込んだデータで置き換えます。よろしいですか？'))return;data=x;save();alert('読み込みました')}catch(err){alert('読み込めないファイルです')}e.target.value=''});$('clearHistory').addEventListener('click',()=>{if(confirm('履歴をすべて削除します。よろしいですか？')){data.history=[];save()}});render();if(!storageAvailable)alert('この開き方では端末への保存が使えない可能性があります。動作確認用としてお使いください。');
+$('exportBtn').addEventListener('click',()=>{const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=BRANCHES[currentBranch].name+'_在庫管理バックアップ_'+new Date().toISOString().slice(0,10)+'.json';a.click();URL.revokeObjectURL(url)});$('importFile').addEventListener('change',async e=>{const f=e.target.files[0];if(!f)return;try{const x=JSON.parse(await f.text());normalizeInventoryData(x);if(!confirm(BRANCHES[currentBranch].name+'のデータを読み込んだデータで置き換えます。よろしいですか？'))return;localStorage.setItem(KEY,JSON.stringify(x));data=x;currentReservationBatchIds=[];lastReservedSite='';$('reserveContinue').hidden=true;$('reserveSpecialNotes').hidden=true;$('reserveSpecialMemo').value='';$('saveReservation').disabled=false;reserveParts=[];render();alert('読み込みました')}catch(err){alert('読み込めないファイルです')}e.target.value=''});$('clearHistory').addEventListener('click',()=>{if(confirm('履歴をすべて削除します。よろしいですか？')){data.history=[];save()}});render();if(!storageAvailable)alert('この開き方では端末への保存が使えない可能性があります。動作確認用としてお使いください。');
 </script></body></html>
