@@ -459,7 +459,7 @@ function reserveDimensions(group){
  if(group==='断熱マット'||group==='AG断熱マット')return ['密度','サイズ'];
  if(group==='GW')return ['密度','外装材','厚み'];
  if(group==='各種原反')return ['外装材'];
- if(group==='副資材')return (reserveParts[0]==='スピンドル鋲'||reserveParts[0]==='ワンタッチピン'||reserveParts[0]==='ATピン')?['種類','長さ']:reserveParts[0]==='ビニール粘着テープ'?['種類','色','サイズ']:reserveParts[0]==='非粘着テープ'?(reserveParts[1]==='AG'?['種類','外装材','色','サイズ']:['種類','外装材','サイズ']):reserveParts[0]==='粘着テープ'?(reserveParts[1]==='AG'?['種類','外装材','色','サイズ']:['種類','外装材','サイズ']):['種類','サイズ・規格'];
+ if(group==='副資材')return reserveParts[0]==='ファインピン'?['種類','色']:(reserveParts[0]==='スピンドル鋲'||reserveParts[0]==='ワンタッチピン'||reserveParts[0]==='ATピン')?['種類','長さ']:reserveParts[0]==='ビニール粘着テープ'?['種類','色','サイズ']:reserveParts[0]==='非粘着テープ'?(reserveParts[1]==='AG'?['種類','外装材','色','サイズ']:['種類','外装材','サイズ']):reserveParts[0]==='粘着テープ'?(reserveParts[1]==='AG'?['種類','外装材','色','サイズ']:['種類','外装材','サイズ']):['種類','サイズ・規格'];
  if(group==='RW'||group==='GW板')return ['外装材','厚み'];
  if(group==='金網（カラー金網）')return reserveParts[0]==='金網'?['色','巻きの長さ']:['色','目合','巻きの長さ'];
  return ['サイズ・規格'];
