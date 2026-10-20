@@ -329,7 +329,8 @@ function ensureFinePinItems(branchData){
 ensureFinePinItems(data);
 function ensureDuctSprayItems(branchData){
  if(!Array.isArray(branchData.items))branchData.items=[];
- if(!branchData.items.some(i=>i.name==='ダクトスプレー'))branchData.items.push({id:'duct_spray',name:'ダクトスプレー',spec:'規格なし',unit:'缶',place:'',qty:0,min:''});
+ for(const item of branchData.items){if(item.name==='ダクトスプレー')item.unit='本';}
+ if(!branchData.items.some(i=>i.name==='ダクトスプレー'))branchData.items.push({id:'duct_spray',name:'ダクトスプレー',spec:'規格なし',unit:'本',place:'',qty:0,min:''});
  const priority=['コーキング','巻き番線','ダクトスプレー','ファインピン'];
  const selected=branchData.items.filter(i=>priority.includes(i.name));
  branchData.items=branchData.items.filter(i=>!priority.includes(i.name));
