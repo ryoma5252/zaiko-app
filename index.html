@@ -765,7 +765,7 @@ function renderPrepList(){
   const loaded=rows.every(isLoaded);
   const prepared=rows.every(r=>!!data.preparedReservations[r.id]);
   const orderPending=!loaded&&hasUnfinishedSiteOrders(site);
-  html+=`<div class="card"><h3>積載日：${esc(dateLabel(date))}（${timeSlot?esc(timeSlot):'朝・夕未設定'}）　現場：${esc(site||'現場未入力')}</h3>${(data.siteSpecialNotes||{})[site]?`<p class="meta" style="white-space:pre-wrap"><strong>特記事項：</strong>${esc(data.siteSpecialNotes[site])}</p>`:''}`;
+  html+=`<div class="card"><h3>積載日：${esc(dateLabel(date))}（${timeSlot?esc(timeSlot):'朝・夕未設定'}）　現場：${esc(site||'現場未入力')}</h3>${(data.siteSpecialNotes||{})[site]?`<p class="meta" style="white-space:pre-wrap;color:#c62828;font-weight:700;background:#fff1f1;border:1px solid #e6a0a0;border-radius:8px;padding:10px"><strong>特記事項：</strong>${esc(data.siteSpecialNotes[site])}</p>`:''}`;
   for(const r of rows){
    const item=data.items.find(i=>i.id===r.itemId),checked=!!data.preparedReservations[r.id],parts=allocation[r.id]||{stock:0,order:0};
    html+=`<label class="prep-line${checked?' is-done':''}"><input type="checkbox" data-prep-id="${esc(r.id)}" ${checked?'checked':''} ${isLoaded(r)?'disabled':''}><span><span class="prep-name">${esc(item?.name||'削除された品目')} / ${esc(item?.spec||'規格なし')}　${Number(r.qty)||0}${esc(item?.unit||'')}</span><span class="meta" style="display:block">使用者：${esc(r.person||'未入力')}${isLoaded(r)?' ／ 積載済み':parts.order>0?' ／ 在庫不足：'+parts.order+esc(item?.unit||''):''}</span></span></label>`;
