@@ -1062,7 +1062,7 @@ $('finishSiteReservation').addEventListener('click',()=>{
  const site=lastReservedSite||$('reservePlace').value.trim();
  if(!site){alert('現場名を確認してください。');return;}
  lastReservedSite=site;
- $('reserveSpecialMemo').value=String((data.siteSpecialNotes||{})[site]||'');
+ $('reserveSpecialMemo').value='';
  $('reserveSpecialNotes').hidden=false;
  $('reserveContinue').hidden=true;
  $('reserveSpecialNotes').scrollIntoView({block:'start',behavior:'auto'});
