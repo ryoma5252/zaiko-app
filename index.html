@@ -769,7 +769,7 @@ function renderPrepList(){
    const item=data.items.find(i=>i.id===r.itemId),checked=!!data.preparedReservations[r.id],parts=allocation[r.id]||{stock:0,order:0};
    html+=`<label class="prep-line${checked?' is-done':''}"><input type="checkbox" data-prep-id="${esc(r.id)}" ${checked?'checked':''} ${isLoaded(r)?'disabled':''}><span><span class="prep-name">${esc(item?.name||'削除された品目')} / ${esc(item?.spec||'規格なし')}　${Number(r.qty)||0}${esc(item?.unit||'')}</span><span class="meta" style="display:block">使用者：${esc(r.person||'未入力')}${isLoaded(r)?' ／ 積載済み':parts.order>0?' ／ 在庫不足：'+parts.order+esc(item?.unit||''):''}</span></span></label>`;
   }
-  html+=`<label class="prep-line" style="font-weight:750"><input type="checkbox" data-load-site-check="${esc(key)}" ${loaded?'checked':''} ${(!prepared||orderPending)&&!loaded?'disabled':''}>積載できましたか？</label><p class="meta">チェックすると在庫数に反映されます。押し忘れた場合でも次の日には在庫数に反映されます。</p>`;
+  html+=`<label class="prep-line" style="font-weight:750"><input type="checkbox" data-load-site-check="${esc(key)}" ${loaded?'checked':''} ${(!prepared||orderPending)&&!loaded?'disabled':''}>積載できましたか？</label><p class="meta">積載チェックすると在庫数に反映されます。押し忘れた場合でも次の日には在庫数に反映されます。</p>`;
   if(!prepared&&!loaded)html+='<p class="meta">まだ材料用意されていません</p>';
   if(orderPending)html+='<p class="meta">まだ発注が終わっていません</p>';
   if(loaded)html+='<p class="meta">積載済み（チェックを外すと在庫数を元に戻します）</p>';
