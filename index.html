@@ -485,7 +485,7 @@ function reserveDimensions(group){
 }
 function reservePartsFor(i,group){
  const spec=String(i.spec||'').split('/').map(x=>x.trim());
- return group==='副資材'?(i.name==='ダクトスプレー'?[i.name]:(i.name==='粘着テープ'||i.name==='非粘着テープ'||i.name==='ビニール粘着テープ')?[i.name,...spec]:[i.name,String(i.spec||'規格なし')])):reserveDimensions(group).length===1?[String(i.spec||'規格なし')]:spec;
+ return group==='副資材'?(i.name==='ダクトスプレー'?[i.name]:(i.name==='粘着テープ'||i.name==='非粘着テープ'||i.name==='ビニール粘着テープ')?[i.name,...spec]:[i.name,String(i.spec||'規格なし')]):reserveDimensions(group).length===1?[String(i.spec||'規格なし')]:spec;
 }
 function reserveAvailability(){
  const i=data.items.find(x=>x.id===$('reserveItem').value),notice=$('reserveStockNotice');
