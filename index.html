@@ -1238,7 +1238,7 @@ $('saveReservation').addEventListener('click',()=>{
  data.pendingSpecialNoteIds.push(newReservation.id);
  if(!data.pendingOrderSites.includes(place))data.pendingOrderSites.push(place);
  lastReservedSite=place;
- $('reserveQty').value='';
+ // 予約後も入力した数量を画面に残し、確認できるようにする。
  $('reserveContinueQuestion').textContent=place+'の現場では、他に予約する材料はありませんか？';
  $('reserveContinue').hidden=false;$('reserveSpecialNotes').hidden=true;
  $('saveReservation').disabled=true;
