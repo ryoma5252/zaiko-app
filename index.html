@@ -502,11 +502,14 @@ function renderReserveSteps(){
   renderReserveSteps();
  }));
  const complete=group&&reserveParts.length===labels.length;
- // 各種原反は外装材を選択せず、予約品目の一覧に全種類を表示する。
- const matched=group==='各種原反'?items:(complete?candidates:[]);
+ const matched=complete?candidates:[];
  sel.innerHTML=matched.length?matched.map(i=>`<option value="${esc(i.id)}">${esc((i.name==='粘着テープ'||i.name==='非粘着テープ')?stockDisplayName(i)+' / '+String(i.spec||'').split('/').slice(1).join('/').trim():(i.name==='各種原反'||i.name==='GW板')?stockDisplayName(i)+(i.name==='GW板'?' / '+String(i.spec||'').split('/').slice(1).join('/').trim():''):i.name+' / '+(i.spec||'規格なし'))}</option>`).join(''):'<option value="">先に材料と規格を選んでください</option>';
- sel.disabled=group==='各種原反'?false:matched.length!==1;
- if(group==='各種原反')sel.insertAdjacentHTML('afterbegin','<option value="" selected>予約する原反を選んでください</option>');
+ sel.disabled=matched.length!==1;
+ // 原反は「外装材を選択」で品目が一意に決まるため、重複する選択欄は隠す。
+ const rollSelected=group==='各種原反'&&matched.length===1;
+ const reserveItemLabel=document.querySelector('label[for="reserveItem"]');
+ if(reserveItemLabel)reserveItemLabel.hidden=group==='各種原反';
+ sel.hidden=group==='各種原反';
  reserveAvailability();
 }
 $('reserveCategory').addEventListener('change',()=>{reserveParts=[];renderReserveSteps()});
