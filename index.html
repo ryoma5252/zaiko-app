@@ -346,6 +346,15 @@ function ensureHachimakiItems(branchData){
  }
 }
 ensureHachimakiItems(data);
+function ensureSpecialJackets(branchData){
+ if(!Array.isArray(branchData.items))branchData.items=[];
+ const sizes=['No.0','No.1','No.2s','No.2','No.3s','No.3','No.4s','No.4','No.5s','No.5','No.6s','No.6','No.7s','No.7','No.8s','No.8','No.9s','No.9','No.10','No.11','No.13','No.14','No.15','No.16','No.17','No.18','No.19s','No.19','No.20','No.21','No.22s','No.22','No.23','No.24','No.25','No.26','No.27','No.28','No.29','No.30','No.31','No.32','No.33','No.34','No.35','No.36'];
+ for(const [c,color] of ['2B','アルミ'].entries())for(const [n,size] of sizes.entries()){
+  const spec=color+' / '+size;
+  if(!branchData.items.some(i=>i.name==='ジャケット'&&i.spec===spec))branchData.items.push({id:'special_jacket_'+c+'_'+n,name:'ジャケット',spec,unit:'本',place:'',qty:0,min:''});
+ }
+}
+ensureSpecialJackets(data);
 try{localStorage.setItem(KEY,JSON.stringify(data))}catch(e){}
 
 // Each branch has independent inventory, reservations, preparation, orders and history.
@@ -368,6 +377,7 @@ function switchBranch(branch){
  ensureATPinItems(data);
  ensureRollMaterialItems(data);
  ensureHachimakiItems(data);
+ ensureSpecialJackets(data);
  ensureGWBoardItems(data);
  if(!Array.isArray(data.reservations))data.reservations=[];
  if(!Array.isArray(data.pendingOrderSites))data.pendingOrderSites=[];
@@ -483,7 +493,8 @@ const jacketPalette={
 'ガルバ':['#506574','#B7C8D0'],'クリーム':['#846B22','#F6E7B0'],
 'サンドホワイト':['#72644C','#E9E0CC'],'ホワイト':['#4F5962','#FFFFFF'],
 'ダル黒':['#252525','#3B3B3B'],'ブルー':['#1554B0','#2778E6'],
-'レンガ':['#9A3927','#BD5C3D'],'グレー':['#555E68','#969DA5']};
+'レンガ':['#9A3927','#BD5C3D'],'グレー':['#555E68','#969DA5'],
+'2B':['#52616b','#adb6bd'],'アルミ':['#526574','#c3cdd4']};
 const caulkingPalette={'クリア':'linear-gradient(135deg,#ffffff 0%,#d9e9ed 50%,#ffffff 100%)','アイボリー':'#eee0bd','ホワイト':'#ffffff','アルミ':'linear-gradient(120deg,#88949e,#e3e8eb,#a4afb8)','ブラック':'#242424'};
 function caulkingSwatch(i){
  if(i.name!=='コーキング')return '';
@@ -511,7 +522,7 @@ function coloredSpec(i){
  const color=match[1].trim(), size=match[2].trim(),palette=jacketPalette[color];
  if(!palette)return esc(spec);
  const finish=color==='ニューシルバー'?'（ツルツル）':color==='シルバー'?'（ザラザラ）':'';
- const swatch=color==='ニューシルバー'
+ const swatch=color==='2B'?'linear-gradient(110deg,#89949c 0%,#b3bbc0 45%,#929da5 100%)':color==='アルミ'?'linear-gradient(115deg,#8c9da8,#e4e9ec,#aebbc4)':color==='ニューシルバー'
   ? 'linear-gradient(115deg,#8b99a6 0%,#ffffff 28%,#b8c6d0 47%,#f7fbff 62%,#8999a8 100%)'
   : color==='シルバー'
   ? 'radial-gradient(circle,#ffffff 1.15px,transparent 1.6px),#a5abb2'
@@ -534,6 +545,8 @@ function prepareCustomCategoryOptions(){
 }
 function prepareFilters(){
  const colors=[...new Set(data.items.filter(i=>i.name==='ジャケット'||i.name==='エルボ').map(i=>String(i.spec||'').split('/')[0].trim()))];
+ const order=['ニュークリーム','ニューシルバー','シルバー','ステンレス','ガルバ','クリーム','サンドホワイト','ホワイト','ダル黒','ブルー','レンガ','グレー','2B','アルミ'];colors.sort((a,b)=>(order.indexOf(a)<0?999:order.indexOf(a))-(order.indexOf(b)<0?999:order.indexOf(b)));
+
  const sel=$('colorFilter'),old=sel.value;
  sel.innerHTML='<option value="">色を選んでください</option>'+colors.map(c=>`<option value="${esc(c)}">${esc(c)}</option>`).join('');
  if(colors.includes(old))sel.value=old;
