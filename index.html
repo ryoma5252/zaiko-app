@@ -1067,8 +1067,8 @@ $('finishSiteReservation').addEventListener('click',()=>{
  $('reserveSpecialMemo').value='';
  $('reserveSpecialNotes').hidden=false;
  $('reserveContinue').hidden=true;
- $('reserveSpecialNotes').scrollIntoView({block:'start',behavior:'auto'});
- $('reserveSpecialMemo').focus();
+ // Androidでキーボードを自動起動すると画面遷移が遅くなるため、入力欄への自動フォーカスはしない。
+ $('reserveSpecialNotes').scrollIntoView({block:'start',behavior:'instant'});
 });
 $('confirmSiteReservation').addEventListener('click',()=>{
  const site=lastReservedSite;
