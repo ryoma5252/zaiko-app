@@ -424,7 +424,7 @@ function renderReserveSteps(){
  }));
  const complete=group&&reserveParts.length===labels.length;
  const matched=complete?candidates:[];
- sel.innerHTML=matched.length?matched.map(i=>`<option value="${esc(i.id)}">${esc(i.name==='粘着テープ'?stockDisplayName(i)+' / '+String(i.spec||'').split('/').slice(1).join('/').trim():i.name+' / '+(i.spec||'規格なし'))}</option>`).join(''):'<option value="">先に材料と規格を選んでください</option>';
+ sel.innerHTML=matched.length?matched.map(i=>`<option value="${esc(i.id)}">${esc((i.name==='粘着テープ'||i.name==='非粘着テープ')?stockDisplayName(i)+' / '+String(i.spec||'').split('/').slice(1).join('/').trim():i.name+' / '+(i.spec||'規格なし'))}</option>`).join(''):'<option value="">先に材料と規格を選んでください</option>';
  sel.disabled=matched.length!==1;
  reserveAvailability();
 }
@@ -448,7 +448,7 @@ function caulkingSwatch(i){
 }
 function isLegacyPlainMesh(i){return i.name==='金網（カラー金網）' && /^金網\s*\/\s*(3分目|5分目)\s*\//.test(String(i.spec||''));}
 function meshKind(i){return i.name==='金網（カラー金網）'?String(i.spec||'').split('/')[0].trim():'';}
-function stockDisplayName(i){if(i.name==='粘着テープ')return String(i.spec||'').split('/')[0].trim()+'粘着テープ';return meshKind(i)||((i.name==='コーキング'&&String(i.spec||'').startsWith('変成'))?'変成コーキング':i.name);}
+function stockDisplayName(i){if(i.name==='粘着テープ'||i.name==='非粘着テープ')return String(i.spec||'').split('/')[0].trim()+i.name;return meshKind(i)||((i.name==='コーキング'&&String(i.spec||'').startsWith('変成'))?'変成コーキング':i.name);}
 function meshSwatch(i){
  if(i.name!=='金網（カラー金網）')return '';
  const color=String(i.spec||'').split('/')[0].trim();
@@ -457,7 +457,7 @@ function meshSwatch(i){
 }
 function coloredSpec(i){
  const spec=String(i.spec||'規格未設定');
- if(i.name==='粘着テープ')return esc(spec.split('/').slice(1).join('/').trim());
+ if(i.name==='粘着テープ'||i.name==='非粘着テープ')return esc(spec.split('/').slice(1).join('/').trim());
  if(i.name!=='ジャケット'&&i.name!=='エルボ')return esc(spec);
  const match=spec.match(/^\s*(.*?)\s*\/\s*(.*)$/);
  if(!match)return esc(spec);
@@ -544,7 +544,7 @@ function updateSpecChoices(){
   const parse=spec=>{const m=String(spec).match(/^(\d+)A(\d+)t$/);return m?{diameter:Number(m[1]),thickness:m[2]+'t'}:null};
   specs.sort((a,b)=>{const x=parse(a),y=parse(b);if(!x||!y)return x?-1:y?1:String(a).localeCompare(String(b),'ja');return thicknessOrder.indexOf(x.thickness)-thicknessOrder.indexOf(y.thickness)||x.diameter-y.diameter});
  }
- sel.innerHTML='<option value="">すべてのサイズ・規格</option>'+specs.map(x=>{const m=group==='副資材'&&x.startsWith('粘着テープ / ')?x.match(/^粘着テープ \/ (.*?) \/ (.*)$/):null;return `<option value="${esc(x)}">${esc(m?m[1]+'粘着テープ / '+m[2]:x)}</option>`}).join('');
+ sel.innerHTML='<option value="">すべてのサイズ・規格</option>'+specs.map(x=>{const m=group==='副資材'?x.match(/^(粘着テープ|非粘着テープ) \/ (.*?) \/ (.*)$/):null;return `<option value="${esc(x)}">${esc(m?m[2]+m[1]+' / '+m[3]:x)}</option>`}).join('');
  if(specs.includes(old))sel.value=old;
  sel.disabled=!group||(group==='RW'&&(!finish||!thickness))||((group==='断熱マット'||group==='AG断熱マット')&&!density);
 }
