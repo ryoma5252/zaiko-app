@@ -1050,8 +1050,10 @@ $('saveReservation').addEventListener('click',()=>{
  $('reserveContinueQuestion').textContent=place+'の現場では、他に予約する材料はありませんか？';
  $('reserveContinue').hidden=false;$('reserveSpecialNotes').hidden=true;
  $('saveReservation').disabled=true;
- save();
- $('reserveContinue').scrollIntoView({block:'center'});
+ // 予約データは直ちに保存し、重い画面全体の再描画は後回しにする。
+ try{localStorage.setItem(KEY,JSON.stringify(data))}catch(e){alert('保存できません。ブラウザの保存設定を確認してください。');return}
+ $('reserveContinue').scrollIntoView({block:'center',behavior:'auto'});
+ requestAnimationFrame(()=>setTimeout(render,0));
 });
 $('continueSiteReservation').addEventListener('click',()=>{
  $('reserveContinue').hidden=true;$('reserveSpecialNotes').hidden=true;$('saveReservation').disabled=false;
