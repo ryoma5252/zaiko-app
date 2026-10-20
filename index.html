@@ -489,7 +489,12 @@ function reservePartsFor(i,group){
 }
 function reserveAvailability(){
  const i=data.items.find(x=>x.id===$('reserveItem').value),notice=$('reserveStockNotice');
- const label=$('reserveQtyLabel');label.textContent=i?`予約数量（${i.unit}単位・${allowsDecimal(i)?'小数点以下も入力可能':'小数点以下は入力不可'}）`:'予約数量';
+ const label=$('reserveQtyLabel');
+ const group=$('reserveCategory').value;
+ const possible=i?[i]:data.items.filter(x=>materialGroup(x)===group&&reserveParts.every((part,idx)=>reservePartsFor(x,group)[idx]===part));
+ const units=[...new Set(possible.map(x=>x.unit))];
+ const decimalRules=[...new Set(possible.map(x=>allowsDecimal(x)))];
+ label.textContent=units.length===1&&decimalRules.length===1?`予約数量（${units[0]}単位・${decimalRules[0]?'小数点以下も入力可能':'小数点以下は入力不可'}）`:'予約数量（材料を選択すると単位・小数点以下の可否を表示）';
  if(!i){notice.textContent='材料とサイズ・色などを順番に選んでください。';return}
  const reserved=reservationsFor(i.id).reduce((n,r)=>n+Number(r.qty||0),0);
  const available=Number(i.qty||0)-reserved,qty=Number($('reserveQty').value||0);
