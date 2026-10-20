@@ -1059,10 +1059,14 @@ $('continueSiteReservation').addEventListener('click',()=>{
  $('reserveCategory').focus();
 });
 $('finishSiteReservation').addEventListener('click',()=>{
- $('reserveContinue').hidden=true;
- $('reserveSpecialMemo').value=String((data.siteSpecialNotes||{})[lastReservedSite]||'');
+ const site=lastReservedSite||$('reservePlace').value.trim();
+ if(!site){alert('現場名を確認してください。');return;}
+ lastReservedSite=site;
+ $('reserveSpecialMemo').value=String((data.siteSpecialNotes||{})[site]||'');
  $('reserveSpecialNotes').hidden=false;
- $('reserveSpecialNotes').scrollIntoView({block:'center'});
+ $('reserveContinue').hidden=true;
+ $('reserveSpecialNotes').scrollIntoView({block:'start',behavior:'auto'});
+ $('reserveSpecialMemo').focus();
 });
 $('confirmSiteReservation').addEventListener('click',()=>{
  const site=lastReservedSite;
