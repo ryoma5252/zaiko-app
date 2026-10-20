@@ -507,6 +507,7 @@ function switchBranch(branch){
  try{const raw=localStorage.getItem(next.key);incoming=raw?JSON.parse(raw):freshBranchData();if(!Array.isArray(incoming.items)||!Array.isArray(incoming.history))throw Error('invalid');}
  catch(e){alert('営業所データを読み込めませんでした。切り替えは中止しました。');return;}
  currentBranch=branch;KEY=next.key;data=incoming;
+ currentReservationBatchIds=[];lastReservedSite='';
  migrateAlkMatName(data);
  ensurePolyTapeItems(data);
  ensureCaulkingItems(data);
@@ -1101,7 +1102,7 @@ function renderReservedList(){
  const bookings=(data.reservations||[]).filter(r=>activeReservation(r)).slice().sort((a,b)=>String(a.place||'').localeCompare(String(b.place||''),'ja')||String(a.date||'').localeCompare(String(b.date||'')));
  if(!bookings.length){target.innerHTML='<div class="empty">現在、予約済みの材料はありません。</div>';return;}
  const sites=[...new Set(bookings.map(r=>String(r.place||'').trim()||'現場未入力'))];
- target.innerHTML=sites.map(site=>`<div class="item"><h3 style="margin:4px 0 10px">現場：${esc(site)}</h3>${bookings.filter(r=>(String(r.place||'').trim()||'現場未入力')===site).map(r=>{const item=data.items.find(i=>i.id===r.itemId);return `<div class="order-line"><strong>${esc(item?.name||'削除された品目')} / ${esc(item?.spec||'規格なし')}</strong><div>数量：${Number(r.qty)||0}${esc(item?.unit||'')}</div>${r.specialNote?notesHtml([r]):''}<div>積載日：${esc(dateLabel(r.date||''))}（${esc(r.timeSlot||'朝・夕未設定')}）　使用者：${esc(r.person||'未入力')}</div><button class="smallbtn" type="button" data-cancel-reservation="${esc(r.id)}">予約取消</button></div>`}).join('')}</div>`).join('');
+ target.innerHTML=sites.map(site=>`<div class="item"><h3 style="margin:4px 0 10px">現場：${esc(site)}</h3>${bookings.filter(r=>(String(r.place||'').trim()||'現場未入力')===site).map(r=>{const item=data.items.find(i=>i.id===r.itemId);return `<div class="order-line"><strong>${esc(item?.name||'削除された品目')} / ${esc(item?.spec||'規格なし')}</strong><div>数量：${Number(r.qty)||0}${esc(item?.unit||'')}</div>${r.specialNote?notesHtml([r])+`<button class="smallbtn" type="button" data-edit-reservation-note="${esc(r.id)}">特記事項を修正・削除</button>`:''}<div>積載日：${esc(dateLabel(r.date||''))}（${esc(r.timeSlot||'朝・夕未設定')}）　使用者：${esc(r.person||'未入力')}</div><button class="smallbtn" type="button" data-cancel-reservation="${esc(r.id)}">予約取消</button></div>`}).join('')}</div>`).join('');
 }
 
 // 脚立積載は拠点ごとに保存する（他の材料データと同じ端末内）。
@@ -1203,6 +1204,16 @@ $('filterGuide').textContent=!group?'まず材料の種類を選んでくださ�
 $('historyList').innerHTML=data.history.length?[...data.history].reverse().map(h=>`<div class="item"><div class="itemtop"><div><div class="itemname">${h.type==='in'?'入庫':'出庫'}：${esc(h.name)}</div><div class="meta">${fmt(h.time)} · 入力者：${esc(h.person||'未入力')}</div><div class="meta">${esc(h.note||'')}</div></div><div class="qty" style="color:${h.type==='in'?'var(--green)':'var(--red)'}">${h.type==='in'?'+':'−'}${h.qty}</div></div></div>`).join(''):'<div class="empty">履歴はまだありません。</div>';fillMove();fillReserve();document.querySelectorAll('[data-quick]').forEach(b=>b.addEventListener('click',()=>{document.querySelector('[data-tab="move"]').click();$('moveItem').value=b.dataset.id;$('moveType').value=b.dataset.quick;updateQuantitySteps();$('moveQty').focus()}));
 document.querySelectorAll('[data-show-orders]').forEach(b=>b.addEventListener('click',()=>{$('orderDetails').hidden=false;$('orderDetails').scrollIntoView({block:'start'});}));
 document.querySelectorAll('[data-reserve]').forEach(b=>b.addEventListener('click',()=>{$('reservationSuccess').hidden=true;document.querySelector('[data-tab="reserve"]').click();fillReserve(b.dataset.reserve)}));
+document.querySelectorAll('[data-edit-reservation-note]').forEach(b=>b.addEventListener('click',()=>{
+ const reservation=data.reservations.find(r=>r.id===b.dataset.editReservationNote);
+ if(!reservation)return;
+ const item=data.items.find(i=>i.id===reservation.itemId);
+ const edited=prompt('「'+(item?.name||'品目')+' / '+(item?.spec||'規格なし')+'」の特記事項を修正してください。空欄にすると削除します。',String(reservation.specialNote||''));
+ if(edited===null)return;
+ const value=edited.trim();
+ if(value)reservation.specialNote=value;else delete reservation.specialNote;
+ save();
+}));
 document.querySelectorAll('[data-cancel-reservation]').forEach(b=>b.addEventListener('click',()=>{if(isLoaded(data.reservations.find(r=>r.id===b.dataset.cancelReservation)||{})){alert('積載済みの予約は取り消せません。入庫・出庫の記録で調整してください。');return;}if(!confirm('この予約を取り消しますか？'))return;data.reservations=data.reservations.filter(r=>r.id!==b.dataset.cancelReservation);data.pendingOrderSites=data.pendingOrderSites.filter(site=>data.reservations.some(r=>String(r.place||'').trim()===site));$('reservationSuccess').hidden=true;save()}));
 }
 
@@ -1217,6 +1228,8 @@ function updateQuantitySteps(){
 }
 function fillMove(){const old=$('moveItem').value;$('moveItem').innerHTML=data.items.map(i=>`<option value="${i.id}">${esc((i.name==='各種原反'||i.name==='GW板')?stockDisplayName(i)+(i.name==='GW板'?' / '+String(i.spec||'').split('/').slice(1).join('/').trim():''):i.name+' / '+(i.spec||'規格なし'))}（在庫 ${i.qty}${esc(i.unit)}）</option>`).join('');if(data.items.some(i=>i.id===old))$('moveItem').value=old;if(!data.items.length)$('moveItem').innerHTML='<option value="">先に品目を登録してください</option>';updateQuantitySteps()}
 let lastReservedSite='';
+// この画面で新規に作成した予約IDのみ保持。過去の保存済みIDは特記事項の対象にしない。
+let currentReservationBatchIds=[];
 function validateReserveDate(){
  const date=$('reserveDate').value;
  const past=Boolean(date&&date<todayLocal());
@@ -1234,8 +1247,9 @@ $('saveReservation').addEventListener('click',()=>{
  if(!validQuantity(qty,item)){alert(allowsDecimal(item)?'予約数量は0.1刻みの正の数にしてください':'予約数量は1以上の整数にしてください');return}
  const newReservation={id:Date.now().toString(36)+Math.random().toString(36).slice(2),itemId:item.id,date,place,person,qty,timeSlot:$('reserveTimeSlot').value};
  data.reservations.push(newReservation);
- if(!Array.isArray(data.pendingSpecialNoteIds))data.pendingSpecialNoteIds=[];
- data.pendingSpecialNoteIds.push(newReservation.id);
+ currentReservationBatchIds.push(newReservation.id);
+ // 旧方式の未確定IDは使用しない（過去の予約への誤関連付け防止）。
+ data.pendingSpecialNoteIds=[];
  if(!data.pendingOrderSites.includes(place))data.pendingOrderSites.push(place);
  lastReservedSite=place;
  // 予約後も入力した数量を画面に残し、確認できるようにする。
@@ -1257,7 +1271,9 @@ $('finishSiteReservation').addEventListener('click',()=>{
  if(!site){alert('現場名を確認してください。');return;}
  lastReservedSite=site;
  $('reserveSpecialMemo').value='';
- $('reserveQtySpecialSummary').textContent=$('reserveQtyLabel').textContent+'：'+($('reserveQty').value||'未入力');
+ const noteTarget=data.reservations.find(r=>r.id===currentReservationBatchIds[currentReservationBatchIds.length-1]);
+ const noteItem=data.items.find(i=>i.id===noteTarget?.itemId);
+ $('reserveQtySpecialSummary').textContent=noteTarget?('特記事項の対象：'+(noteItem?.name||'品目')+' / '+(noteItem?.spec||'規格なし')+'　数量：'+noteTarget.qty+(noteItem?.unit||'')):'今回の予約に関連付ける材料がありません';
  $('reserveSpecialNotes').hidden=false;
  $('reserveContinue').hidden=true;
  // Androidでキーボードを自動起動すると画面遷移が遅くなるため、入力欄への自動フォーカスはしない。
@@ -1266,11 +1282,11 @@ $('finishSiteReservation').addEventListener('click',()=>{
 $('confirmSiteReservation').addEventListener('click',()=>{
  const site=lastReservedSite;
  if(!site)return;
- if(!data.siteSpecialNotes||typeof data.siteSpecialNotes!=='object')data.siteSpecialNotes={};
  const memo=$('reserveSpecialMemo').value.trim();
- const pending=(data.pendingSpecialNoteIds||[]).filter(id=>data.reservations.some(r=>r.id===id&&String(r.place||'').trim()===site));
+ const pending=currentReservationBatchIds.filter(id=>data.reservations.some(r=>r.id===id&&String(r.place||'').trim()===site));
  const targetId=pending[pending.length-1];
  for(const r of data.reservations){if(pending.includes(r.id)){if(r.id===targetId&&memo)r.specialNote=memo;else delete r.specialNote;}}
+ currentReservationBatchIds=[];
  data.pendingSpecialNoteIds=[];
  data.pendingOrderSites=data.pendingOrderSites.filter(p=>p!==site);
  $('reserveContinue').hidden=true;$('reserveSpecialNotes').hidden=true;$('reserveSpecialMemo').value='';$('saveReservation').disabled=false;
