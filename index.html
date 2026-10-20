@@ -475,6 +475,19 @@ ensureRWPItems(data);
 try{localStorage.setItem(KEY,JSON.stringify(data))}catch(e){}
 
 // Each branch has independent inventory, reservations, preparation, orders and history.
+function ensureAllSmallJacketSizes(branchData){
+ if(!Array.isArray(branchData.items))branchData.items=[];
+ const suffixSizes=Array.from({length:37},(_,n)=>'No.'+n+'s');
+ for(const name of ['ジャケット','エルボ']){
+  const colors=[...new Set(branchData.items.filter(i=>i.name===name&&String(i.spec||'').includes(' / ')).map(i=>String(i.spec).split(' / ')[0].trim()))];
+  for(const color of colors)for(const size of suffixSizes){
+   const spec=color+' / '+size;
+   if(branchData.items.some(i=>i.name===name&&i.spec===spec))continue;
+   branchData.items.push({id:'small_'+(name==='ジャケット'?'j':'e')+'_'+color+'_'+size,name,spec,unit:name==='ジャケット'?'本':'個',place:'',qty:0,min:''});
+  }
+ }
+}
+ensureAllSmallJacketSizes(data);
 const branchCatalog=JSON.parse(JSON.stringify(data.items));
 function freshBranchData(){return {items:branchCatalog.map(i=>({...i,qty:0,min:i.min??'',place:''})),history:[],reservations:[],pendingOrderSites:[],preparedReservations:{},expiredWorkHistory:{},orderedSiteItems:{},loadedReservations:{}}}
 function switchBranch(branch){
@@ -502,6 +515,7 @@ function switchBranch(branch){
  ensureRollMaterialItems(data);
  ensureHachimakiItems(data);
  ensureSpecialJackets(data);
+ ensureAllSmallJacketSizes(data);
  ensureCoilItems(data);
  ensureSoundproofSheetItems(data);
  ensureGWP50Items(data);
