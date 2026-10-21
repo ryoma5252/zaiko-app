@@ -1301,12 +1301,12 @@ function renderInventoryAudit(){
  const catalogGroups=[...new Set((data.items||[]).filter(i=>!isLegacyPlainMesh(i)).map(materialGroup))];
  const gwpIndex=catalogGroups.indexOf('GWP');
  if(gwpIndex>0)catalogGroups.push(...catalogGroups.splice(0,gwpIndex));
- const orderedGroups=catalogGroups.filter(group=>groups.has(group)).map(group=>[group,groups.get(group)]);
- if(groups.has('GWP')&&groups.has('RWP')){
-  const rwpIndex=orderedGroups.findIndex(([group])=>group==='RWP');
-  const [rwp]=orderedGroups.splice(rwpIndex,1);
-  orderedGroups.splice(orderedGroups.findIndex(([group])=>group==='GWP')+1,0,rwp);
+ if(catalogGroups.includes('GWP')&&catalogGroups.includes('RWP')){
+  const rwpIndex=catalogGroups.indexOf('RWP');
+  const [rwp]=catalogGroups.splice(rwpIndex,1);
+  catalogGroups.splice(catalogGroups.indexOf('GWP')+1,0,rwp);
  }
+ const orderedGroups=catalogGroups.filter(group=>groups.has(group)).map(group=>[group,groups.get(group)]);
  target.innerHTML='<p class="hint">全 '+rows.length+' 品目（在庫0を含む）</p>'+orderedGroups.map(([group,items])=>'<h3>'+esc(group.startsWith('custom:')?'追加品目':group)+'</h3>'+items.map(i=>'<div style="padding:9px 2px;border-bottom:1px solid var(--line)"><strong>'+esc(stockDisplayName(i))+'</strong> / '+esc(i.spec||'規格なし')+'　<strong>在庫 '+esc(String(i.qty??0))+esc(i.unit||'')+'</strong></div>').join('')).join('');
 }
 function renderLadders(){
