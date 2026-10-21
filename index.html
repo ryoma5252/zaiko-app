@@ -648,7 +648,7 @@ function reserveAvailability(){
  const possible=i?[i]:data.items.filter(x=>materialGroup(x)===group&&reserveParts.every((part,idx)=>reservePartsFor(x,group)[idx]===part));
  const units=[...new Set(possible.map(x=>x.unit))];
  const decimalRules=[...new Set(possible.map(x=>allowsDecimal(x)))];
- label.textContent=units.length===1&&decimalRules.length===1?`予約数量（${units[0]}単位・${decimalRules[0]?'小数点以下も入力可能':'小数点以下は入力不可'}）`:'予約数量（材料を選択すると単位・小数点以下の可否を表示）';
+ label.textContent=group==='ペフ'?'予約数量（本単位:2m・小数点以下も入力可能）':units.length===1&&decimalRules.length===1?`予約数量（${units[0]}単位・${decimalRules[0]?'小数点以下も入力可能':'小数点以下は入力不可'}）`:'予約数量（材料を選択すると単位・小数点以下の可否を表示）';
  if(!i){notice.textContent='材料とサイズ・色などを順番に選んでください。';return}
  const reserved=roundQuantity(reservationsFor(i.id).reduce((n,r)=>n+Number(r.qty||0),0));
  const available=roundQuantity(Number(i.qty||0)-reserved),qty=Number($('reserveQty').value||0);
@@ -1284,7 +1284,7 @@ function updateQuantitySteps(){
  const move=data.items.find(i=>i.id===$('moveItem').value),reserve=data.items.find(i=>i.id===$('reserveItem').value);
  for(const [el,item] of [[$('moveQty'),move],[$('reserveQty'),reserve]]){
   const decimal=allowsDecimal(item);el.step=decimal?'0.1':'1';el.min=decimal?'0.1':'1';
-  if(el.id==='reserveQty')$('reserveQtyLabel').textContent=item?`予約数量（${item.unit}単位・${decimal?'小数点以下も入力可能':'小数点以下は入力不可'}）`:'予約数量';
+  if(el.id==='reserveQty')$('reserveQtyLabel').textContent=item?.name==='ペフ'?'予約数量（本単位:2m・小数点以下も入力可能）':item?`予約数量（${item.unit}単位・${decimal?'小数点以下も入力可能':'小数点以下は入力不可'}）`:'予約数量';
  }
 }
 function fillMove(){const old=$('moveItem').value;$('moveItem').innerHTML=data.items.map(i=>`<option value="${i.id}">${esc((i.name==='各種原反'||i.name==='GW板')?stockDisplayName(i)+(i.name==='GW板'?' / '+String(i.spec||'').split('/').slice(1).join('/').trim():''):(i.name==='遮音シート'?stockDisplayName(i):i.name)+' / '+(i.spec||'規格なし'))}（在庫 ${i.qty}${esc(i.unit)}）</option>`).join('');if(data.items.some(i=>i.id===old))$('moveItem').value=old;if(!data.items.length)$('moveItem').innerHTML='<option value="">先に品目を登録してください</option>';updateQuantitySteps()}
