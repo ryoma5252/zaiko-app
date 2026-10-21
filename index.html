@@ -487,7 +487,7 @@ function ensurePefItems(branchData){
   return {id:'pef_'+code,name:'ペフ',spec,unit:'本',place:'',qty:0,min:''};
  });
  const heatPefItems=pefItems.map((item,index)=>{
-  const id='heat_pef_'+sizes[index][0],spec=item.spec.replace(/^PEG(?=\d)/,'PPE');
+  const id='heat_pef_'+sizes[index][0],spec=item.spec.replace(/^PEG(?=\d)/,'PPE').replace('厚み7.5mm','厚み10mm');
   const existing=branchData.items.find(i=>i.name==='耐熱ペフ'&&(i.id===id||i.spec===spec));
   if(existing){existing.spec=spec;return existing;}
   return {id,name:'耐熱ペフ',spec,unit:'本',place:'',qty:0,min:''};
