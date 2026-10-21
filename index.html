@@ -486,8 +486,10 @@ function ensurePefItems(branchData){
   if(existing){if(['PEG6','PEG8','PEG13'].includes(code))existing.spec=spec;return existing;}
   return {id:'pef_'+code,name:'ペフ',spec,unit:'本',place:'',qty:0,min:''};
  });
+ const copperPipes={'PEG4':'6Φ・6.35Φ','PEG6':'8Φ・9.52Φ','PEG8':'12.7Φ','PEG10':'15.88Φ','PEG13U':'19.05Φ','PEG16':'22.22Φ','PEG20':'25.4Φ','PEG20U':'28.58Φ','PEG25':'31.75Φ','PEG25U':'34.92Φ','PEG30':'38.1Φ','PEG40':'44.45Φ','PEG50U':'53.98Φ'};
  const heatPefItems=pefItems.map((item,index)=>{
-  const id='heat_pef_'+sizes[index][0],spec=item.spec.replace(/^PEG(?=\d)/,'PPE').replace('厚み7.5mm','厚み10mm');
+  const code=sizes[index][0],id='heat_pef_'+code;
+  const spec=item.spec.replace(/^PEG(?=\d)/,'PPE').replace('厚み7.5mm','厚み10mm')+(copperPipes[code]?' 銅管'+copperPipes[code]:'');
   const existing=branchData.items.find(i=>i.name==='耐熱ペフ'&&(i.id===id||i.spec===spec));
   if(existing){existing.spec=spec;return existing;}
   return {id,name:'耐熱ペフ',spec,unit:'本',place:'',qty:0,min:''};
