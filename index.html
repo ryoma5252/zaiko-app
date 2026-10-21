@@ -715,7 +715,7 @@ function renderReserveSteps(){
   }
   if(!options.length)break;
   const current=reserveParts[idx]||'';
-  html+=`<label for="reserveStep${idx}">${esc(labels[idx])}を選択</label><select id="reserveStep${idx}" data-reserve-step="${idx}"><option value="">${esc(labels[idx])}を選んでください</option>${options.map(v=>`<option value="${esc(v)}"${v===current?' selected':''}>${esc(group==='各種原反'?rollMaterialDisplayName(v):v)}</option>`).join('')}</select>`;
+  html+=`<label for="reserveStep${idx}">${esc(labels[idx])}を選択</label><select id="reserveStep${idx}" data-reserve-step="${idx}"><option value="">${esc(labels[idx])}を選んでください</option>${options.map(v=>`<option value="${esc(v)}"${v===current?' selected':''}>${esc(group==='各種原反'?rollMaterialDisplayName(v):group==='遮音シート'?v+'（10m巻）':v)}</option>`).join('')}</select>`;
   if(!current)break;
   candidates=candidates.filter(i=>reservePartsFor(i,group)[idx]===current);
  }
