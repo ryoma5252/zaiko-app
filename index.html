@@ -1039,6 +1039,16 @@ function notesHtml(rows){
  const notes=reservationNotes(rows);
  return notes.map(note=>`<p class="meta" style="white-space:pre-wrap;color:#c62828;font-weight:700;background:#fff1f1;border:1px solid #e6a0a0;border-radius:8px;padding:10px"><strong>特記事項：</strong>${esc(note)}</p>`).join('');
 }
+function editReservationNote(reservationId){
+ const reservation=data.reservations.find(r=>r.id===reservationId);
+ if(!reservation)return;
+ const item=data.items.find(i=>i.id===reservation.itemId);
+ const edited=prompt('「'+(item?.name||'品目')+' / '+(item?.spec||'規格なし')+'」の特記事項を入力・修正してください。空欄にすると削除します。',String(reservation.specialNote||''));
+ if(edited===null)return;
+ const value=edited.trim();
+ if(value)reservation.specialNote=value;else delete reservation.specialNote;
+ save();
+}
 function renderPrepList(){
  const result=$('prepResult');
  const bookings=(data.reservations||[]).filter(r=>!isPastReservation(r)).slice().sort((a,b)=>String(a.date).localeCompare(String(b.date))||String(a.place||'').localeCompare(String(b.place||''),'ja'));
@@ -1056,10 +1066,10 @@ function renderPrepList(){
   const loaded=rows.every(isLoaded);
   const prepared=rows.every(r=>!!data.preparedReservations[r.id]);
   const orderPending=!loaded&&hasUnfinishedSiteOrders(site);
-  html+=`<div class="card"><h3>積載日：${esc(dateLabel(date))}（${timeSlot?esc(timeSlot):'朝・夕未設定'}）　現場：${esc(site||'現場未入力')}</h3>${notesHtml(rows)}`;
+  html+=`<div class="card"><h3>積載日：${esc(dateLabel(date))}（${timeSlot?esc(timeSlot):'朝・夕未設定'}）　現場：${esc(site||'現場未入力')}</h3>`;
   for(const r of rows){
    const item=data.items.find(i=>i.id===r.itemId),checked=!!data.preparedReservations[r.id],parts=allocation[r.id]||data.loadedReservations[r.id]?.allocation||(isLoaded(r)?{stock:roundQuantity(data.loadedReservations[r.id]?.deducted),order:roundQuantity(Math.max(0,(Number(r.qty)||0)-(Number(data.loadedReservations[r.id]?.deducted)||0)))}:{stock:0,order:Number(r.qty)||0});
-   html+=`<label class="prep-line${checked?' is-done':''}"><input type="checkbox" data-prep-id="${esc(r.id)}" ${checked?'checked':''} ${isLoaded(r)?'disabled':''}><span><span class="prep-name">${esc(item?.name||'削除された品目')} / ${esc(item?.spec||'規格なし')}　${Number(r.qty)||0}${esc(item?.unit||'')}（在庫:${parts.stock} 発注:${parts.order}）</span><span class="meta" style="display:block">使用者：${esc(r.person||'未入力')}${isLoaded(r)?' ／ 積載済み':parts.order>0?' ／ 在庫不足：'+parts.order+esc(item?.unit||''):''}</span></span></label>`;
+   html+=`<label class="prep-line${checked?' is-done':''}"><input type="checkbox" data-prep-id="${esc(r.id)}" ${checked?'checked':''} ${isLoaded(r)?'disabled':''}><span><span class="prep-name">${esc(item?.name||'削除された品目')} / ${esc(item?.spec||'規格なし')}　${Number(r.qty)||0}${esc(item?.unit||'')}（在庫:${parts.stock} 発注:${parts.order}）</span><span class="meta" style="display:block">使用者：${esc(r.person||'未入力')}${isLoaded(r)?' ／ 積載済み':parts.order>0?' ／ 在庫不足：'+parts.order+esc(item?.unit||''):''}</span></span></label>${r.specialNote?notesHtml([r]):''}<button class="smallbtn" type="button" data-prep-note-id="${esc(r.id)}">${r.specialNote?'特記事項を修正・削除':'特記事項を追加'}</button>`;
   }
   html+=`<label class="prep-line" style="font-weight:750"><input type="checkbox" data-load-site-check="${esc(key)}" ${loaded?'checked':''} ${(!prepared||orderPending)&&!loaded?'disabled':''}>積載できましたか？</label><p class="meta">積載チェックすると在庫数に反映されます。押し忘れた場合でも次の日には在庫数に反映されます。</p>`;
   if(!prepared&&!loaded)html+='<p class="meta">まだ材料用意されていません</p>';
@@ -1069,6 +1079,7 @@ function renderPrepList(){
   html+='</div>';
  }
  result.innerHTML=html;
+ result.querySelectorAll('[data-prep-note-id]').forEach(button=>button.addEventListener('click',()=>editReservationNote(button.dataset.prepNoteId)));
  result.querySelectorAll('[data-prep-slot]').forEach(sel=>sel.addEventListener('change',()=>{const reservation=(data.reservations||[]).find(r=>r.id===sel.dataset.prepSlot);if(reservation){reservation.timeSlot=sel.value;save();}}));
  result.querySelectorAll('[data-prep-id]').forEach(box=>box.addEventListener('change',()=>{
   if(box.checked)data.preparedReservations[box.dataset.prepId]=true;else delete data.preparedReservations[box.dataset.prepId];
@@ -1364,16 +1375,7 @@ $('filterGuide').textContent=!group?'まず材料の種類を選んでくださ�
 $('historyList').innerHTML=data.history.length?[...data.history].reverse().map(h=>`<div class="item"><div class="itemtop"><div><div class="itemname">${h.type==='in'?'入庫':'出庫'}：${esc(h.name)}</div><div class="meta">${fmt(h.time)} · 入力者：${esc(h.person||'未入力')}</div><div class="meta">${esc(h.note||'')}</div></div><div class="qty" style="color:${h.type==='in'?'var(--green)':'var(--red)'}">${h.type==='in'?'+':'−'}${h.qty}</div></div></div>`).join(''):'<div class="empty">履歴はまだありません。</div>';fillMove();fillReserve();document.querySelectorAll('[data-quick]').forEach(b=>b.addEventListener('click',()=>{document.querySelector('[data-tab="move"]').click();$('moveItem').value=b.dataset.id;$('moveType').value=b.dataset.quick;updateQuantitySteps();$('moveQty').focus()}));
 document.querySelectorAll('[data-show-orders]').forEach(b=>b.addEventListener('click',openOrderOverview));
 document.querySelectorAll('[data-reserve]').forEach(b=>b.addEventListener('click',()=>{$('reservationSuccess').hidden=true;document.querySelector('[data-tab="reserve"]').click();fillReserve(b.dataset.reserve)}));
-document.querySelectorAll('[data-edit-reservation-note]').forEach(b=>b.addEventListener('click',()=>{
- const reservation=data.reservations.find(r=>r.id===b.dataset.editReservationNote);
- if(!reservation)return;
- const item=data.items.find(i=>i.id===reservation.itemId);
- const edited=prompt('「'+(item?.name||'品目')+' / '+(item?.spec||'規格なし')+'」の特記事項を入力・修正してください。空欄にすると削除します。',String(reservation.specialNote||''));
- if(edited===null)return;
- const value=edited.trim();
- if(value)reservation.specialNote=value;else delete reservation.specialNote;
- save();
-}));
+document.querySelectorAll('[data-edit-reservation-note]').forEach(b=>b.addEventListener('click',()=>editReservationNote(b.dataset.editReservationNote)));
 document.querySelectorAll('[data-cancel-reservation]').forEach(b=>b.addEventListener('click',()=>{if(isLoaded(data.reservations.find(r=>r.id===b.dataset.cancelReservation)||{})){alert('積載済みの予約は取り消せません。入庫・出庫の記録で調整してください。');return;}if(!confirm('この予約を取り消しますか？'))return;data.reservations=data.reservations.filter(r=>r.id!==b.dataset.cancelReservation);data.pendingOrderSites=data.pendingOrderSites.filter(site=>data.reservations.some(r=>String(r.place||'').trim()===site));$('reservationSuccess').hidden=true;save()}));
 }
 
