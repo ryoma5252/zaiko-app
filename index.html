@@ -770,7 +770,7 @@ function isLegacyPlainMesh(i){return i.name==='金網（カラー金網）' && /
 function meshKind(i){return i.name==='金網（カラー金網）'?String(i.spec||'').split('/')[0].trim():'';}
 function rollMaterialDisplayName(spec){const facing=String(spec||''),lengths={'ALK':60,'ALK（黒）':60,'AG':30,'AG（黒）':30,'バロン':20,'難燃AG':30,'難燃バロン':50,'難燃バロン（表）':50,'難燃バロン（裏）':50};const name=facing.replace(/（(黒|表|裏)）$/,'')+'原反'+(facing.match(/（(黒|表|裏)）$/)?.[0]||'');return name+(lengths[facing]?'（'+lengths[facing]+'m巻）':'')}
 function rwRollLength(spec){const thickness=String(spec||'').split('/').map(x=>x.trim()).find(x=>/^(25|50)t$/.test(x));return thickness==='25t'?'（11m巻）':thickness==='50t'?'（8m巻）':''}
-function gwRollLength(spec){const thickness=String(spec||'').split('/').map(x=>x.trim()).find(x=>/^(25|50)t$/.test(x));return thickness==='25t'?'（22m巻）':thickness==='50t'?'（16m）':''}
+function gwRollLength(spec){const thickness=String(spec||'').split('/').map(x=>x.trim()).find(x=>/^(25|50)t$/.test(x));return thickness==='25t'?'（22m巻）':thickness==='50t'?'（16m巻）':''}
 function stockDisplayName(i){if(i.name==='GW')return 'GW'+gwRollLength(i.spec);if(i.name==='RW')return 'RW'+rwRollLength(i.spec);if(i.name==='遮音シート')return '遮音シート（10m巻）';if(i.name==='各種原反')return rollMaterialDisplayName(i.spec);if(i.name==='GW板')return String(i.spec||'').split('/')[0].trim()+'GW板';if(i.name==='粘着テープ'||i.name==='非粘着テープ')return String(i.spec||'').split('/')[0].trim()+i.name;return meshKind(i)||((i.name==='コーキング'&&String(i.spec||'').startsWith('変成'))?'変成コーキング':i.name);}
 function meshSwatch(i){
  if(i.name!=='金網（カラー金網）')return '';
