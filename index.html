@@ -1298,7 +1298,10 @@ function renderInventoryAudit(){
  }
  if(groups.has('副資材'))groups.get('副資材').sort((a,b)=>SUB_MATERIAL_ORDER.indexOf(a.name)-SUB_MATERIAL_ORDER.indexOf(b.name));
  if(groups.has('RWP'))groups.get('RWP').sort(compareRWP);
- const orderedGroups=[...groups];
+ const catalogGroups=[...new Set((data.items||[]).filter(i=>!isLegacyPlainMesh(i)).map(materialGroup))];
+ const gwpIndex=catalogGroups.indexOf('GWP');
+ if(gwpIndex>0)catalogGroups.push(...catalogGroups.splice(0,gwpIndex));
+ const orderedGroups=catalogGroups.filter(group=>groups.has(group)).map(group=>[group,groups.get(group)]);
  if(groups.has('GWP')&&groups.has('RWP')){
   const rwpIndex=orderedGroups.findIndex(([group])=>group==='RWP');
   const [rwp]=orderedGroups.splice(rwpIndex,1);
