@@ -494,6 +494,13 @@ function ensurePefItems(branchData){
   if(existing){existing.spec=spec;return existing;}
   return {id,name:'耐熱ペフ',spec,unit:'本',place:'',qty:0,min:''};
  });
+ for(const [afterCode,code,diameter,copper] of [['PPE40','PPE50S',51,'50.8Φ'],['PPE50','PPE65S',64,'63.5Φ']]){
+  const id='heat_pef_'+code,spec=code+'（内径'+diameter+'mm厚み10mm） 銅管'+copper;
+  const existing=branchData.items.find(i=>i.name==='耐熱ペフ'&&(i.id===id||i.spec===spec));
+  const item=existing||{id,name:'耐熱ペフ',spec,unit:'本',place:'',qty:0,min:''};
+  const position=heatPefItems.findIndex(i=>i.spec.startsWith(afterCode+'（'));
+  heatPefItems.splice(position<0?heatPefItems.length:position+1,0,item);
+ }
  const allPefItems=[...pefItems,...heatPefItems];
  const selected=new Set(allPefItems);
  branchData.items=branchData.items.filter(i=>!selected.has(i));
