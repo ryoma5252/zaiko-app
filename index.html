@@ -721,7 +721,14 @@ $('cancelAppGuide').addEventListener('click',()=>{
  $('cancelAppGuide').hidden=true;$('updateAppGuide').textContent='更新';
 });
 
-document.querySelectorAll('.tab').forEach(b=>b.addEventListener('click',()=>{closeOrderOverview();document.querySelectorAll('.tab').forEach(x=>x.classList.toggle('active',x===b));document.querySelectorAll('.panel').forEach(x=>x.classList.toggle('active',x.id===b.dataset.tab));if(b.dataset.tab==='stock'){if(!$('orderDetails').hidden){$('orderDetails').hidden=true;$('orderAlert').hidden=false;}window.scrollTo({top:0,behavior:'auto'});} if(b.dataset.tab==='appGuide'){window.scrollTo({top:0,behavior:'auto'});if(!$('appGuideEditor').hidden)resizeAppGuideEditor();}if(b.dataset.tab==='inventoryAudit')renderInventoryAudit();if(b.dataset.tab==='move')fillMove();if(b.dataset.tab==='prepList'){renderPrepList();updatePrepTabAttention();}if(b.dataset.tab==='reserve'){fillReserve();if(lastReservedSite&&data.pendingOrderSites.includes(lastReservedSite)){$('reserveContinue').hidden=false;$('saveReservation').disabled=true;}}}));
+function scrollToPanel(panelId){
+ const panel=$(panelId),header=document.querySelector('header');
+ if(!panel)return;
+ const headerHeight=header?header.getBoundingClientRect().height:0;
+ panel.style.minHeight=Math.max(0,window.innerHeight-headerHeight-16)+'px';
+ window.scrollTo({top:Math.max(0,panel.getBoundingClientRect().top+window.scrollY-headerHeight-8),behavior:'auto'});
+}
+document.querySelectorAll('.tab').forEach(b=>b.addEventListener('click',()=>{closeOrderOverview();document.querySelectorAll('.tab').forEach(x=>x.classList.toggle('active',x===b));document.querySelectorAll('.panel').forEach(x=>x.classList.toggle('active',x.id===b.dataset.tab));if(b.dataset.tab==='stock'){if(!$('orderDetails').hidden){$('orderDetails').hidden=true;$('orderAlert').hidden=false;}} if(b.dataset.tab==='appGuide'){if(!$('appGuideEditor').hidden)resizeAppGuideEditor();}if(b.dataset.tab==='inventoryAudit')renderInventoryAudit();if(b.dataset.tab==='move')fillMove();if(b.dataset.tab==='prepList'){renderPrepList();updatePrepTabAttention();}if(b.dataset.tab==='reserve'){fillReserve();if(lastReservedSite&&data.pendingOrderSites.includes(lastReservedSite)){$('reserveContinue').hidden=false;$('saveReservation').disabled=true;}}scrollToPanel(b.dataset.tab);}));
 // Android の戻る操作をアプリ内のトップ（在庫一覧）に割り当てる。
 // 履歴を一段追加し、戻る操作後に再び同じページ内で待機する。
 try{
