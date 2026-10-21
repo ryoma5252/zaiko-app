@@ -1246,10 +1246,15 @@ function renderCustomItems(){
 }
 function renderReservedList(){
  const target=$('reservedList');
- const bookings=(data.reservations||[]).filter(r=>activeReservation(r)).slice().sort((a,b)=>String(a.place||'').localeCompare(String(b.place||''),'ja')||String(a.date||'').localeCompare(String(b.date||'')));
+ const bookings=(data.reservations||[]).filter(r=>activeReservation(r)).slice().sort((a,b)=>String(a.date||'').localeCompare(String(b.date||''))||String(a.place||'').trim().localeCompare(String(b.place||'').trim(),'ja'));
  if(!bookings.length){target.innerHTML='<div class="empty">現在、予約済みの材料はありません。</div>';return;}
- const sites=[...new Set(bookings.map(r=>String(r.place||'').trim()||'現場未入力'))];
- target.innerHTML=sites.map(site=>`<div class="item"><h3 style="margin:4px 0 10px">現場：${esc(site)}</h3>${bookings.filter(r=>(String(r.place||'').trim()||'現場未入力')===site).map(r=>{const item=data.items.find(i=>i.id===r.itemId);return `<div class="order-line"><strong>${esc(item?.name||'削除された品目')} / ${esc(item?.spec||'規格なし')}</strong><div>数量：${Number(r.qty)||0}${esc(item?.unit||'')}</div>${r.specialNote?notesHtml([r]):''}<button class="smallbtn" type="button" data-edit-reservation-note="${esc(r.id)}">${r.specialNote?'特記事項を修正・削除':'特記事項を追加'}</button><div>積載日：${esc(dateLabel(r.date||''))}（${esc(r.timeSlot||'朝・夕未設定')}）　使用者：${esc(r.person||'未入力')}</div><button class="smallbtn" type="button" data-cancel-reservation="${esc(r.id)}">予約取消</button></div>`}).join('')}</div>`).join('');
+ const groups=new Map();
+ for(const r of bookings){
+  const date=String(r.date||''),site=String(r.place||'').trim()||'現場未入力',key=JSON.stringify([date,site]);
+  if(!groups.has(key))groups.set(key,{date,site,rows:[]});
+  groups.get(key).rows.push(r);
+ }
+ target.innerHTML=[...groups.values()].map(({date,site,rows})=>`<div class="item"><h3 style="margin:4px 0 10px">積載予定日：${esc(dateLabel(date))}　現場：${esc(site)}</h3>${rows.map(r=>{const item=data.items.find(i=>i.id===r.itemId);return `<div class="order-line"><strong>${esc(item?.name||'削除された品目')} / ${esc(item?.spec||'規格なし')}</strong><div>数量：${Number(r.qty)||0}${esc(item?.unit||'')}</div>${r.specialNote?notesHtml([r]):''}<button class="smallbtn" type="button" data-edit-reservation-note="${esc(r.id)}">${r.specialNote?'特記事項を修正・削除':'特記事項を追加'}</button><div>積載予定日：${esc(dateLabel(r.date||''))}（${esc(r.timeSlot||'朝・夕未設定')}）　使用者：${esc(r.person||'未入力')}</div><button class="smallbtn" type="button" data-cancel-reservation="${esc(r.id)}">予約取消</button></div>`}).join('')}</div>`).join('');
 }
 
 // 脚立積載は拠点ごとに保存する（他の材料データと同じ端末内）。
