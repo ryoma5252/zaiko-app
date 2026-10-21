@@ -471,7 +471,7 @@ function ensureCoilItems(branchData){
 ensureCoilItems(data);
 function ensurePefItems(branchData){
  if(!Array.isArray(branchData.items))return;
- const sizes=[["PEG4",7,7.5,""],["PEG6",10,10,"鋼管6A"],["PEG8",13,10,"鋼管8A"],["PEG10",16,10,"塩ビ10A"],["PEG13",18,10,"塩ビ13A鋼管10A"],["PEG13U",20,10,""],["PEG16",23,10,"塩ビ16A鋼管15A"],["PEG20",26,10,"塩ビ20A"],["PEG20U",29,10,"鋼管20A"],["PEG25",32,10,"塩ビ25A"],["PEG25U",35,10,"鋼管25A"],["PEG30",39,10,"塩ビ30A"],["PEG35",43,10,"鋼管32A"],["PEG40U",45,10,""],["PEG40",49,10,"塩ビ40A鋼管40A"],["PEG50U",54,10,""],["PEG50",61,10,"塩ビ50A鋼管50A"],["PEG65W",77,10,"塩ビ65A鋼管65A"],["PEG75W",90,10,"塩ビ75A鋼管80A"],["PEG100W",115,10,"塩ビ100A鋼管100A"],["PEG125W",140,10,"塩ビ125A鋼管125A"],["PEG150W",166,10,"塩ビ150A鋼管150A"]];
+ const sizes=[["PEG4",7,7.5,""],["PEG6",10,7.5,"鋼管6A"],["PEG8",13,7.5,"鋼管8A"],["PEG10",16,10,"塩ビ10A"],["PEG13",18,10,"塩ビ13A鋼管10A"],["PEG13U",20,10,""],["PEG16",23,10,"塩ビ16A鋼管15A"],["PEG20",26,10,"塩ビ20A"],["PEG20U",29,10,"鋼管20A"],["PEG25",32,10,"塩ビ25A"],["PEG25U",35,10,"鋼管25A"],["PEG30",39,10,"塩ビ30A"],["PEG35",43,10,"鋼管32A"],["PEG40U",45,10,""],["PEG40",49,10,"塩ビ40A鋼管40A"],["PEG50U",54,10,""],["PEG50",61,10,"塩ビ50A鋼管50A"],["PEG65W",77,10,"塩ビ65A鋼管65A"],["PEG75W",90,10,"塩ビ75A鋼管80A"],["PEG100W",115,10,"塩ビ100A鋼管100A"],["PEG125W",140,10,"塩ビ125A鋼管125A"],["PEG150W",166,10,"塩ビ150A鋼管150A"]];
  const pefItems=sizes.map(([code,diameter,thickness,pipes])=>{
   const spec=code+'（内径'+diameter+'mm厚み'+thickness+'mm）'+(pipes?' '+pipes:'');
   const existing=branchData.items.find(i=>i.name==='ペフ'&&(i.id==='pef_'+code||i.spec===spec));
