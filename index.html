@@ -1190,7 +1190,7 @@ function openOrderOverview(){
  $('orderDetails').scrollIntoView({block:'start'});
 }
 function orderOverviewRows(rows){
- const sorted=[...rows].sort((a,b)=>Number(a.ordered)-Number(b.ordered)||a.site.localeCompare(b.site,'ja')||String(a.firstDate||'').localeCompare(String(b.firstDate||''))||String(a.item.name||'').localeCompare(String(b.item.name||''),'ja')||String(a.item.spec||'').localeCompare(String(b.item.spec||''),'ja'));
+ const sorted=[...rows].sort((a,b)=>Number(a.ordered)-Number(b.ordered)||String(a.firstDate||'').localeCompare(String(b.firstDate||''))||a.site.localeCompare(b.site,'ja')||String(a.item.name||'').localeCompare(String(b.item.name||''),'ja')||String(a.item.spec||'').localeCompare(String(b.item.spec||''),'ja'));
  if(orderOverviewRanks===null)orderOverviewRanks=new Map();
  for(const row of sorted){
   const key=siteOrderKey(row.site,row.item.id);
