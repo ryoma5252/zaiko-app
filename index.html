@@ -579,8 +579,20 @@ function ensureFine45ElbowItems(branchData){
  const position=branchData.items.reduce((last,item,index)=>item.name==='ファインエルボ'?index:last,-1);
  branchData.items.splice(position<0?branchData.items.length:position+1,0,...elbows);
 }
+function ensureElbowColorItems(branchData){
+ if(!Array.isArray(branchData.items))return;
+ const colors=['ニュークリーム','ニューシルバー','シルバー','ステンレス','ガルバ','クリーム','アイボリー','キャメル','こげ茶','新茶','サンドホワイト','ホワイト','ダル黒','ブルー','レンガ','グレー','2B','アルミ'];
+ const additions=[];
+ for(const color of colors)for(const size of graySizes){
+  const spec=color+' / '+size;
+  if(!branchData.items.some(i=>i.name==='エルボ'&&i.spec===spec))additions.push({id:'elbow_color_'+encodeURIComponent(color)+'_'+size,name:'エルボ',spec,unit:'個',place:'',qty:0,min:''});
+ }
+ const position=branchData.items.reduce((last,item,index)=>item.name==='エルボ'?index:last,-1);
+ branchData.items.splice(position<0?branchData.items.length:position+1,0,...additions);
+}
 function ensure45ElbowItems(branchData){
  if(!Array.isArray(branchData.items))return;
+ ensureElbowColorItems(branchData);
  const specs=[...new Set(branchData.items.filter(i=>i.name==='エルボ').map(i=>i.spec))];
  const elbows=specs.map(spec=>branchData.items.find(i=>i.name==='45°エルボ'&&i.spec===spec)||{id:'elbow45_'+encodeURIComponent(spec),name:'45°エルボ',spec,unit:'個',place:'',qty:0,min:''});
  const selected=new Set(elbows);
