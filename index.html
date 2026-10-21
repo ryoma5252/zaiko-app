@@ -52,7 +52,8 @@ body:not(.branch-toyonaka):not(.branch-sakai) .tab.order-needs-attention.active{
 <h2 id="appGuideTitle">アラタカ在庫管理アプリの使い方</h2>
 <div id="appGuideText"></div>
 <textarea id="appGuideEditor" aria-label="アプリの使い方を入力" hidden></textarea>
-<div class="app-guide-actions"><button id="cancelAppGuide" class="btn secondary" type="button" hidden>キャンセル</button><button id="updateAppGuide" class="btn" type="button">更新</button></div>
+<p id="appGuideStatus" class="hint" role="status" hidden></p>
+<div class="app-guide-actions" style="flex-wrap:wrap"><button id="restoreAppGuide" class="btn secondary" type="button" hidden>前の文章を復元</button><button id="cancelAppGuide" class="btn secondary" type="button" hidden>キャンセル</button><button id="updateAppGuide" class="btn" type="button">更新</button></div>
 </section>
 </main>
 <script>
@@ -696,30 +697,75 @@ const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&
 
 // 使い方は全拠点で共通。入力した文章はHTMLとして実行せず、そのまま表示する。
 const APP_GUIDE_KEY='aratakaInventoryAppGuide_v1';
-let appGuideText='';
-try{appGuideText=localStorage.getItem(APP_GUIDE_KEY)||''}catch(e){}
-$('appGuideText').textContent=appGuideText;
+const APP_GUIDE_BACKUPS=APP_GUIDE_KEY+'_backups',APP_GUIDE_DRAFT=APP_GUIDE_KEY+'_draft';
+let appGuideText='',appGuideEditBase='';
+function guideBackups(){
+ try{const rows=JSON.parse(localStorage.getItem(APP_GUIDE_BACKUPS)||'[]');return Array.isArray(rows)?rows.filter(x=>typeof x==='string'&&x.trim()):[]}catch(e){return []}
+}
+function readAppGuide(){
+ const saved=localStorage.getItem(APP_GUIDE_KEY);
+ return saved||guideBackups().slice(-1)[0]||'';
+}
+function keepGuideBackup(text){
+ if(!text.trim())return;
+ const rows=guideBackups().filter(x=>x!==text);rows.push(text);
+ localStorage.setItem(APP_GUIDE_BACKUPS,JSON.stringify(rows.slice(-5)));
+}
+function guideStatus(text){$('appGuideStatus').textContent=text;$('appGuideStatus').hidden=!text}
+function refreshAppGuide(){
+ try{appGuideText=readAppGuide();keepGuideBackup(appGuideText)}
+ catch(e){guideStatus('保存データを読み込めませんでした。再読み込みして確認してください。');return}
+ $('appGuideText').textContent=appGuideText;
+ $('restoreAppGuide').hidden=!guideBackups().some(x=>x!==appGuideText);
+}
 function resizeAppGuideEditor(){
  const editor=$('appGuideEditor');
  editor.style.height='auto';editor.style.height=Math.max(240,editor.scrollHeight)+'px';
 }
-$('appGuideEditor').addEventListener('input',resizeAppGuideEditor);
+function closeGuideEditor(){
+ $('appGuideEditor').hidden=true;$('appGuideText').hidden=false;
+ $('cancelAppGuide').hidden=true;$('updateAppGuide').textContent='更新';refreshAppGuide();
+}
+$('appGuideEditor').addEventListener('input',()=>{
+ resizeAppGuideEditor();
+ try{localStorage.setItem(APP_GUIDE_DRAFT,$('appGuideEditor').value);guideStatus('下書きを自動保存しました')}
+ catch(e){guideStatus('下書きを保存できません。画面を閉じずに文章をコピーしてください。')}
+});
 window.addEventListener('resize',()=>{if(!$('appGuideEditor').hidden)resizeAppGuideEditor()});
+window.addEventListener('storage',e=>{if(e.key===APP_GUIDE_KEY&&$('appGuideEditor').hidden)refreshAppGuide()});
 $('updateAppGuide').addEventListener('click',()=>{
  const editor=$('appGuideEditor');
  if(editor.hidden){
-  editor.value=appGuideText;editor.hidden=false;$('appGuideText').hidden=true;
+  refreshAppGuide();appGuideEditBase=appGuideText;$('restoreAppGuide').hidden=true;
+  let draft=null;try{draft=localStorage.getItem(APP_GUIDE_DRAFT)}catch(e){}
+  editor.value=draft!==null?draft:appGuideText;editor.hidden=false;$('appGuideText').hidden=true;
   $('cancelAppGuide').hidden=false;$('updateAppGuide').textContent='保存';
+  guideStatus(draft!==null&&draft!==appGuideText?'入力途中の下書きを復元しました':'');
   resizeAppGuideEditor();editor.focus();return;
  }
- try{localStorage.setItem(APP_GUIDE_KEY,editor.value)}catch(e){alert('保存できません。ブラウザの保存設定を確認してください。');return}
- appGuideText=editor.value;$('appGuideText').textContent=appGuideText;
- editor.hidden=true;$('appGuideText').hidden=false;$('cancelAppGuide').hidden=true;$('updateAppGuide').textContent='更新';
+ try{
+  if(readAppGuide()!==appGuideEditBase){alert('別の画面で文章が更新されています。入力文をコピーしてからキャンセルし、最新の文章を確認してください。');return}
+  if(!editor.value.trim()&&appGuideText.trim()){alert('文章が空欄のため保存しませんでした。以前の文章はそのまま残ります。');return;}
+  keepGuideBackup(appGuideText);
+  localStorage.setItem(APP_GUIDE_KEY,editor.value);
+  if(localStorage.getItem(APP_GUIDE_KEY)!==editor.value)throw Error('save failed');
+  keepGuideBackup(editor.value);
+  localStorage.removeItem(APP_GUIDE_DRAFT);
+ }catch(e){guideStatus('保存を完了できません。画面を閉じずに文章をコピーしてください。');return}
+ closeGuideEditor();guideStatus('保存しました');
 });
 $('cancelAppGuide').addEventListener('click',()=>{
- $('appGuideEditor').hidden=true;$('appGuideText').hidden=false;
- $('cancelAppGuide').hidden=true;$('updateAppGuide').textContent='更新';
+ try{localStorage.removeItem(APP_GUIDE_DRAFT)}catch(e){}
+ closeGuideEditor();guideStatus('');
 });
+$('restoreAppGuide').addEventListener('click',()=>{
+ const previous=guideBackups().filter(x=>x!==appGuideText).slice(-1)[0];
+ if(!previous||!confirm('前に保存した文章を表示して、編集できる状態に戻しますか？'))return;
+ $('updateAppGuide').click();$('appGuideEditor').value=previous;
+ try{localStorage.setItem(APP_GUIDE_DRAFT,previous)}catch(e){}
+ resizeAppGuideEditor();guideStatus('前の文章を復元しました。確認して保存してください。');
+});
+refreshAppGuide();
 
 function scrollToPanel(panelId){
  const panel=$(panelId),header=document.querySelector('header');
