@@ -727,7 +727,28 @@ function reserveAvailability(){
   notice.innerHTML+=`<div class="shortage">⚠ 在庫が${missing}${esc(i.unit)}不足します。発注して下さい。</div>`;
  }
 }
+function recoverReservationDraft(){
+ const pending=Array.isArray(data.pendingOrderSites)?data.pendingOrderSites:[];
+ if(lastReservedSite&&pending.includes(lastReservedSite))return null;
+ lastReservedSite='';currentReservationBatchIds=[];
+ const site=pending.slice().reverse().find(place=>(data.reservations||[]).some(r=>activeReservation(r)&&String(r.place||'').trim()===place));
+ if(!site)return null;
+ const rows=(data.reservations||[]).filter(r=>activeReservation(r)&&String(r.place||'').trim()===site);
+ const draft=data.reservationDraft;
+ const ids=draft?.site===site&&Array.isArray(draft.ids)?draft.ids.filter(id=>rows.some(r=>r.id===id)):[];
+ const last=rows[rows.length-1];
+ currentReservationBatchIds=ids.length?ids:[last.id];
+ lastReservedSite=site;
+ const reservation=rows.find(r=>r.id===currentReservationBatchIds[currentReservationBatchIds.length-1])||last;
+ $('reservePlace').value=site;$('reservePerson').value=reservation.person||'';
+ $('reserveDate').value=reservation.date||'';$('reserveTimeSlot').value=reservation.timeSlot||'';
+ $('reserveQty').value=String(reservation.qty||'');
+ $('reserveContinueQuestion').textContent=site+'の予約入力が途中です。続けるか、完了してください。';
+ $('reserveContinue').hidden=false;$('reserveSpecialNotes').hidden=true;$('saveReservation').disabled=true;
+ return reservation;
+}
 function fillReserve(preferredId){
+ const recovered=recoverReservationDraft();if(!preferredId&&recovered)preferredId=recovered.itemId;
  const category=$('reserveCategory'),previous=category.value;
  const groups=[...new Set(data.items.map(materialGroup))].filter(Boolean);
  const ordered=[...RESERVE_ORDER.filter(x=>groups.includes(x)),...groups.filter(x=>!RESERVE_ORDER.includes(x)&&x!=='すべて'&&x!=='その他')];
@@ -1413,6 +1434,7 @@ $('saveReservation').addEventListener('click',()=>{
  const newReservation={id:Date.now().toString(36)+Math.random().toString(36).slice(2),itemId:item.id,date,place,person,qty,timeSlot:$('reserveTimeSlot').value};
  data.reservations.push(newReservation);
  currentReservationBatchIds.push(newReservation.id);
+ data.reservationDraft={site:place,ids:[...currentReservationBatchIds]};
  // 旧方式の未確定IDは使用しない（過去の予約への誤関連付け防止）。
  data.pendingSpecialNoteIds=[];
  if(!data.pendingOrderSites.includes(place))data.pendingOrderSites.push(place);
@@ -1435,8 +1457,8 @@ $('finishSiteReservation').addEventListener('click',()=>{
  const site=lastReservedSite||$('reservePlace').value.trim();
  if(!site){alert('現場名を確認してください。');return;}
  lastReservedSite=site;
- $('reserveSpecialMemo').value='';
  const noteTarget=data.reservations.find(r=>r.id===currentReservationBatchIds[currentReservationBatchIds.length-1]);
+ $('reserveSpecialMemo').value=noteTarget?.specialNote||'';
  const noteItem=data.items.find(i=>i.id===noteTarget?.itemId);
  $('reserveQtySpecialSummary').textContent=noteTarget?('特記事項の対象：'+(noteItem?.name||'品目')+' / '+(noteItem?.spec||'規格なし')+'　数量：'+noteTarget.qty+(noteItem?.unit||'')):'今回の予約に関連付ける材料がありません';
  $('reserveSpecialNotes').hidden=false;
@@ -1452,6 +1474,7 @@ $('confirmSiteReservation').addEventListener('click',()=>{
  const targetId=pending[pending.length-1];
  for(const r of data.reservations){if(pending.includes(r.id)){if(r.id===targetId&&memo)r.specialNote=memo;else delete r.specialNote;}}
  currentReservationBatchIds=[];
+ if(data.reservationDraft?.site===site)delete data.reservationDraft;
  data.pendingSpecialNoteIds=[];
  data.pendingOrderSites=data.pendingOrderSites.filter(p=>p!==site);
  $('reserveContinue').hidden=true;$('reserveSpecialNotes').hidden=true;$('reserveSpecialMemo').value='';$('saveReservation').disabled=false;
