@@ -1307,7 +1307,7 @@ function openOrderOverview(){
  if($('orderDetails').hidden)orderOverviewRanks=null;
  $('orderDetails').hidden=false;
  renderOutstandingOrderDetails();
- $('orderDetails').scrollIntoView({block:'start'});
+ scrollToPanel('orderDetails');
 }
 function orderOverviewRows(rows){
  const sorted=[...rows].sort((a,b)=>Number(a.ordered)-Number(b.ordered)||String(a.firstDate||'').localeCompare(String(b.firstDate||''))||a.site.localeCompare(b.site,'ja')||String(a.item.name||'').localeCompare(String(b.item.name||''),'ja')||String(a.item.spec||'').localeCompare(String(b.item.spec||''),'ja'));
