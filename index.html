@@ -35,6 +35,9 @@ body:not(.branch-toyonaka):not(.branch-sakai) .tab.order-needs-attention.active{
 .app-guide-actions{display:flex;justify-content:flex-end;gap:10px;margin-top:28px}
 .app-guide-actions .btn{width:auto;min-width:90px;margin:0}
 #saveReservation:disabled{background:#fff;color:#000;border:1px solid #dce4ea;opacity:1}
+
+/* 発注内容の表示中は在庫の検索・一覧・バックアップ欄を隠す。 */
+#stock:has(> #orderDetails:not([hidden])) > :not(#orderDetails){display:none!important}
 </style><style>
 .fineJReferenceTable tbody tr{border-bottom:2px solid #77838e}
 .fineJReferenceTable tbody tr td{border-bottom:0!important}
