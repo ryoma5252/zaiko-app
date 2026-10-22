@@ -1490,6 +1490,7 @@ function render(fast=false){updateFineJGuides();updateMetalSizeGuides();if(!fast
  if(group==='副資材')filtered.sort((a,b)=>SUB_MATERIAL_ORDER.indexOf(a.name)-SUB_MATERIAL_ORDER.indexOf(b.name));
  if(group==='RWP')filtered.sort(compareRWP);
  if(needDensity){filtered.sort((a,b)=>{const parse=i=>{const m=String(i.spec).match(/(\d+)(A|Φ)$/);return m?[m[2]==='A'?0:1,Number(m[1])]:[2,0]};const x=parse(a),y=parse(b);return x[0]-y[0]||x[1]-y[1]})}
+ if(group==='ALK断熱マット'||group==='AG断熱マット'){filtered.sort((a,b)=>parseFloat(String(a.spec||'').split('/')[0])-parseFloat(String(b.spec||'').split('/')[0]));}
  if(group==='コイル'){const order=["ニュークリーム","ニューシルバー","シルバー","ステンレス","ガルバ","クリーム","アイボリー","キャメル","こげ茶","新茶","サンドホワイト","ホワイト","ダル黒","ブルー","レンガ","グレー","2B","アルミ"];filtered.sort((a,b)=>order.indexOf(String(a.spec||'').split('/')[0].trim())-order.indexOf(String(b.spec||'').split('/')[0].trim())||parseFloat(String(a.spec||'').split('/')[1])-parseFloat(String(b.spec||'').split('/')[1]));}
  if(group==='GW板'){const order=['生','AG','白クロス','黒クロス','ALK'];filtered.sort((a,b)=>order.indexOf(String(a.spec||'').split('/')[0].trim())-order.indexOf(String(b.spec||'').split('/')[0].trim())||String(a.spec||'').localeCompare(String(b.spec||''),'ja'));}
  if(needMesh){const kinds=['金網','白アミ','緑アミ','青アミ','赤アミ'];filtered.sort((a,b)=>kinds.indexOf(meshKind(a))-kinds.indexOf(meshKind(b))||String(a.spec||'').localeCompare(String(b.spec||''),'ja'));}
