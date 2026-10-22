@@ -1046,20 +1046,36 @@ function siteShortages(site){
  const result=[];
  for(const item of data.items){
   const bookings=reservationsFor(item.id).filter(r=>activeReservation(r)).slice().sort((a,b)=>a.date.localeCompare(b.date)||String(a.id).localeCompare(String(b.id)));
-  let available=Number(item.qty||0),missing=0,firstDate='',requested=0;
+  let available=Number(item.qty||0);
+  const dates=new Map();
   for(const r of bookings){
-   const qty=Number(r.qty||0);
-   const unmet=roundQuantity(Math.max(0,qty-Math.max(0,available)));
+   const qty=Number(r.qty||0),unmet=roundQuantity(Math.max(0,qty-Math.max(0,available)));
    available=roundQuantity(Math.max(0,available-qty));
-   if(String(r.place||'').trim()===site){
-    requested=roundQuantity(requested+qty);
-    if(unmet>0){missing=roundQuantity(missing+unmet);if(!firstDate||r.date<firstDate)firstDate=r.date}
-   }
+   if(String(r.place||'').trim()!==site)continue;
+   if(!dates.has(r.date))dates.set(r.date,{item,missing:0,firstDate:r.date,requested:0});
+   const row=dates.get(r.date);row.requested=roundQuantity(row.requested+qty);row.missing=roundQuantity(row.missing+unmet);
   }
-  if(missing>0)result.push({item,missing,firstDate,requested});
+  result.push(...[...dates.values()].filter(row=>row.missing>0));
  }
  return result.sort((a,b)=>a.firstDate.localeCompare(b.firstDate)||a.item.name.localeCompare(b.item.name,'ja'));
 }
+function migrateDateOrderChecks(){
+ let changed=false;
+ const sites=[...new Set((data.reservations||[]).filter(activeReservation).map(r=>String(r.place||'').trim()))];
+ for(const site of sites){
+  const rows=siteShortages(site);
+  for(const itemId of new Set(rows.map(o=>o.item.id))){
+   const legacyKey=siteOrderKey(site,itemId),legacy=data.orderedSiteItems[legacyKey];
+   if(legacy===undefined)continue;
+   const matching=rows.filter(o=>o.item.id===itemId),total=roundQuantity(matching.reduce((n,o)=>n+o.missing,0));
+   if(Number(legacy)!==total)continue;
+   for(const o of matching){const key=siteOrderKey(site,itemId,o.firstDate);if(!Object.prototype.hasOwnProperty.call(data.orderedSiteItems,key))data.orderedSiteItems[key]=o.missing;}
+   delete data.orderedSiteItems[legacyKey];changed=true;
+  }
+ }
+ if(changed)try{localStorage.setItem(KEY,JSON.stringify(data))}catch(e){}
+}
+
 // Preparation status is keyed by each reservation ID, so repeated materials on different days stay independent.
 if(!data.preparedReservations||typeof data.preparedReservations!=='object'||Array.isArray(data.preparedReservations))data.preparedReservations={};
 // Allocate physical stock to reservations in date order across all sites.
@@ -1076,9 +1092,9 @@ function archiveExpiredWork(){
  for(const r of data.reservations||[]){
   if(!isPastReservation(r)||data.expiredWorkHistory[r.id])continue;
   const item=data.items.find(i=>i.id===r.itemId),site=String(r.place||'').trim();
-  const orderKey=siteOrderKey(site,r.itemId),entry=data.loadedReservations[r.id];
+  const orderKey=siteOrderKey(site,r.itemId,r.date),entry=data.loadedReservations[r.id];
   const part=entry?.allocation||allocations[r.id]||(entry&&Number.isFinite(Number(entry.deducted))?{stock:roundQuantity(entry.deducted),order:roundQuantity(Math.max(0,Number(r.qty)-Number(entry.deducted)))}:{stock:0,order:Number(r.qty)||0});
-  const orderRecord=data.orderedSiteItems[orderKey];
+  const orderRecord=data.orderedSiteItems[orderKey]??data.orderedSiteItems[siteOrderKey(site,r.itemId)];
   data.expiredWorkHistory[r.id]={date:r.date,site,person:r.person||'',name:item?.name||'削除された品目',spec:item?.spec||'',unit:item?.unit||'',qty:Number(r.qty)||0,stock:part.stock,order:part.order,prepared:!!data.preparedReservations[r.id],loaded:isLoaded(r),ordered:part.order<=0?null:(orderRecord!==undefined&&Number(orderRecord)>0),archivedAt:new Date().toISOString()};
   changed=true;
  }
@@ -1131,12 +1147,9 @@ function updatePrepTabAttention(){
   tab.setAttribute('aria-label',needsPrep?'材料用意・まだ用意できていない材料があります':'材料用意');
  }
 }
-function hasUnfinishedSiteOrders(site){
- // Use the same outstanding-order logic as the 発注 screen.
- // An order is complete only when its current required quantity was checked.
- if((data.pendingOrderSites||[]).includes(site))return true;
- return siteShortages(site).some(o=>{
-  const key=siteOrderKey(site,o.item.id);
+function hasUnfinishedSiteOrders(site,date){
+ return siteShortages(site).filter(o=>!date||o.firstDate===date).some(o=>{
+  const key=siteOrderKey(site,o.item.id,o.firstDate);
   return !Object.prototype.hasOwnProperty.call(data.orderedSiteItems,key)||Number(data.orderedSiteItems[key])!==o.missing;
  });
 }
@@ -1174,7 +1187,7 @@ function renderPrepList(){
   const [date,site,timeSlot]=JSON.parse(key);
   const loaded=rows.every(isLoaded);
   const prepared=rows.every(r=>!!data.preparedReservations[r.id]);
-  const orderPending=!loaded&&hasUnfinishedSiteOrders(site);
+  const orderPending=!loaded&&hasUnfinishedSiteOrders(site,date);
   html+=`<div class="card"><h3>積載日：${esc(dateLabel(date))}（${timeSlot?esc(timeSlot):'朝・夕未設定'}）　現場：${esc(site||'現場未入力')}</h3>`;
   for(const r of rows){
    const item=data.items.find(i=>i.id===r.itemId),checked=!!data.preparedReservations[r.id],parts=allocation[r.id]||data.loadedReservations[r.id]?.allocation||(isLoaded(r)?{stock:roundQuantity(data.loadedReservations[r.id]?.deducted),order:roundQuantity(Math.max(0,(Number(r.qty)||0)-(Number(data.loadedReservations[r.id]?.deducted)||0)))}:{stock:0,order:Number(r.qty)||0});
@@ -1199,7 +1212,7 @@ function renderPrepList(){
   const rows=(data.reservations||[]).filter(r=>r.date===date&&String(r.place||'').trim()===site&&String(r.timeSlot||'')===timeSlot);
   if(box.checked){
    if(!rows.every(r=>!!data.preparedReservations[r.id])){alert('まだ材料用意されていません');box.checked=false;return}
-   if(hasUnfinishedSiteOrders(site)){alert('まだ発注が終わっていません');box.checked=false;return}
+   if(hasUnfinishedSiteOrders(site,date)){alert('まだ発注が終わっていません');box.checked=false;return}
    const pending=rows.filter(r=>!isLoaded(r));
    if(!pending.length){render();return}
    if(!confirm(`${site||'現場未入力'}（${date}）の材料を積載済みにしますか？\n在庫がない発注品は在庫0のままです。`)){box.checked=false;return}
@@ -1234,7 +1247,7 @@ function renderPrepList(){
 }
 // Store the ordered quantity per site and item, so a changed shortage requires a fresh check.
 if(!data.orderedSiteItems||typeof data.orderedSiteItems!=='object'||Array.isArray(data.orderedSiteItems))data.orderedSiteItems={};
-function siteOrderKey(site,itemId){return JSON.stringify([site,itemId])}
+function siteOrderKey(site,itemId,date){return JSON.stringify(date?[site,itemId,date]:[site,itemId])}
 if(!data.orderPersons||typeof data.orderPersons!=='object'||Array.isArray(data.orderPersons))data.orderPersons={};
 function recordOrderCheck(box,key,qty){
  if(box.checked){data.orderedSiteItems[key]=qty;}
@@ -1249,7 +1262,7 @@ function unplacedOrders(){
  for(const site of sites){
   if(pending.has(site))continue; // Wait for the site's reservation completion.
   for(const o of siteShortages(site)){
-   const key=siteOrderKey(site,o.item.id);
+   const key=siteOrderKey(site,o.item.id,o.firstDate);
    const checked=Object.prototype.hasOwnProperty.call(data.orderedSiteItems,key)&&Number(data.orderedSiteItems[key])===o.missing;
    if(!checked)rows.push({...o,site});
   }
@@ -1271,11 +1284,11 @@ function renderSiteOrders(){
  const rows=siteShortages(site);
  if(!rows.length){result.innerHTML='<div class="notice">この現場で発注が必要な材料はありません。現在の在庫で予約数量をまかなえます。</div>';return}
  result.innerHTML=`<div class="notice"><strong>${esc(site)}</strong>：発注が必要な材料 ${rows.length}品目</div>`+
- rows.map(o=>{const key=siteOrderKey(site,o.item.id),ordered=Number(data.orderedSiteItems[key])===o.missing&&Object.prototype.hasOwnProperty.call(data.orderedSiteItems,key);return `<div class="order-line"><strong>${esc(o.item.name)} / ${esc(o.item.spec||'規格なし')}</strong><div class="shortage">発注必要数：${o.missing}${esc(o.item.unit)}</div><label class="order-check-row${ordered?' is-done':''}"><input type="checkbox" data-ordered-item="${esc(o.item.id)}" ${ordered?'checked':''}><span>${ordered?'発注済':'発注したらチェック（未発注）'}</span></label><div>積載予定日：${esc(dateLabel(o.firstDate))}まで</div><div class="hint">この現場の予約合計：${o.requested}${esc(o.item.unit)} ／ 現在庫：${o.item.qty}${esc(o.item.unit)}（他現場の予約も考慮）</div></div>`}).join('');
+ rows.map(o=>{const key=siteOrderKey(site,o.item.id,o.firstDate),ordered=Number(data.orderedSiteItems[key])===o.missing&&Object.prototype.hasOwnProperty.call(data.orderedSiteItems,key);return `<div class="order-line"><strong>${esc(o.item.name)} / ${esc(o.item.spec||'規格なし')}</strong><div class="shortage">発注必要数：${o.missing}${esc(o.item.unit)}</div><label class="order-check-row${ordered?' is-done':''}"><input type="checkbox" data-ordered-item="${esc(o.item.id)}" data-order-date="${esc(o.firstDate)}" ${ordered?'checked':''}><span>${ordered?'発注済':'発注したらチェック（未発注）'}</span></label><div>積載予定日：${esc(dateLabel(o.firstDate))}まで</div><div class="hint">この現場・積載予定日の予約合計：${o.requested}${esc(o.item.unit)} ／ 現在庫：${o.item.qty}${esc(o.item.unit)}（他現場の予約も考慮）</div></div>`}).join('');
  result.querySelectorAll('[data-ordered-item]').forEach(box=>box.addEventListener('change',()=>{
-  const itemId=box.dataset.orderedItem,current=siteShortages(site).find(o=>o.item.id===itemId);
+  const itemId=box.dataset.orderedItem,current=siteShortages(site).find(o=>o.item.id===itemId&&o.firstDate===box.dataset.orderDate);
   if(!current)return;
-  const key=siteOrderKey(site,itemId);
+  const key=siteOrderKey(site,itemId,current.firstDate);
   recordOrderCheck(box,key,current.missing);
  }));
 }
@@ -1288,10 +1301,10 @@ function activeOrderRows(){
  for(const site of sites){
   if(pending.has(site))continue;
   for(const o of siteShortages(site)){
-   const key=siteOrderKey(site,o.item.id);
+   const key=siteOrderKey(site,o.item.id,o.firstDate);
    const ordered=Object.prototype.hasOwnProperty.call(data.orderedSiteItems,key)&&Number(data.orderedSiteItems[key])===o.missing;
-   const reservationPersons=[...new Set((data.reservations||[]).filter(r=>activeReservation(r)&&String(r.place||'').trim()===site&&r.itemId===o.item.id).map(r=>String(r.person||'').trim()).filter(Boolean))];
-   rows.push({...o,site,ordered,orderPerson:data.orderPersons?.[key]||reservationPersons.join('、')});
+   const reservationPersons=[...new Set((data.reservations||[]).filter(r=>activeReservation(r)&&String(r.place||'').trim()===site&&r.itemId===o.item.id&&r.date===o.firstDate).map(r=>String(r.person||'').trim()).filter(Boolean))];
+   rows.push({...o,site,ordered,orderPerson:data.orderPersons?.[key]||data.orderPersons?.[siteOrderKey(site,o.item.id)]||reservationPersons.join('、')});
   }
  }
  return rows;
@@ -1313,10 +1326,10 @@ function orderOverviewRows(rows){
  const sorted=[...rows].sort((a,b)=>Number(a.ordered)-Number(b.ordered)||String(a.firstDate||'').localeCompare(String(b.firstDate||''))||a.site.localeCompare(b.site,'ja')||String(a.item.name||'').localeCompare(String(b.item.name||''),'ja')||String(a.item.spec||'').localeCompare(String(b.item.spec||''),'ja'));
  if(orderOverviewRanks===null)orderOverviewRanks=new Map();
  for(const row of sorted){
-  const key=siteOrderKey(row.site,row.item.id);
+  const key=siteOrderKey(row.site,row.item.id,row.firstDate);
   if(!orderOverviewRanks.has(key))orderOverviewRanks.set(key,orderOverviewRanks.size);
  }
- return sorted.sort((a,b)=>orderOverviewRanks.get(siteOrderKey(a.site,a.item.id))-orderOverviewRanks.get(siteOrderKey(b.site,b.item.id)));
+ return sorted.sort((a,b)=>orderOverviewRanks.get(siteOrderKey(a.site,a.item.id,a.firstDate))-orderOverviewRanks.get(siteOrderKey(b.site,b.item.id,b.firstDate)));
 }
 function renderOrders(){
  const rows=activeOrderRows(),remaining=rows.filter(o=>!o.ordered);
@@ -1337,12 +1350,12 @@ function renderOutstandingOrderDetails(){
  const rows=activeOrderRows(),list=$('orderList');
  if(!rows.length){closeOrderOverview();return}
  const sorted=orderOverviewRows(rows);
- list.innerHTML=sorted.map((o,index)=>`<div class="order-line"><strong>現場：${esc(o.site)}　発注者：${esc(o.orderPerson||'未入力')}</strong>${notesHtml((data.reservations||[]).filter(r=>activeReservation(r)&&String(r.place||'').trim()===o.site&&r.itemId===o.item.id))}<div><strong>${esc(o.item.name)} / ${esc(o.item.spec||'規格なし')}</strong></div><div class="shortage">発注必要数：${o.missing}${esc(o.item.unit)}</div><div>積載予定日：${esc(dateLabel(o.firstDate))}まで</div><label class="order-check-row${o.ordered?' is-done':''}"><input type="checkbox" data-overview-site="${esc(o.site)}" data-overview-item="${esc(o.item.id)}" ${o.ordered?'checked':''}><span>${o.ordered?'発注済':'発注したらチェック（未発注）'}</span></label></div>`).join('');
+ list.innerHTML=sorted.map((o,index)=>`<div class="order-line"><strong>現場：${esc(o.site)}　発注者：${esc(o.orderPerson||'未入力')}</strong>${notesHtml((data.reservations||[]).filter(r=>activeReservation(r)&&String(r.place||'').trim()===o.site&&r.itemId===o.item.id&&r.date===o.firstDate))}<div><strong>${esc(o.item.name)} / ${esc(o.item.spec||'規格なし')}</strong></div><div class="shortage">発注必要数：${o.missing}${esc(o.item.unit)}</div><div>積載予定日：${esc(dateLabel(o.firstDate))}まで</div><label class="order-check-row${o.ordered?' is-done':''}"><input type="checkbox" data-overview-site="${esc(o.site)}" data-overview-item="${esc(o.item.id)}" data-order-date="${esc(o.firstDate)}" ${o.ordered?'checked':''}><span>${o.ordered?'発注済':'発注したらチェック（未発注）'}</span></label></div>`).join('');
  list.querySelectorAll('[data-overview-item]').forEach(box=>box.addEventListener('change',()=>{
   const site=box.dataset.overviewSite,itemId=box.dataset.overviewItem;
-  const current=siteShortages(site).find(o=>o.item.id===itemId);
+  const current=siteShortages(site).find(o=>o.item.id===itemId&&o.firstDate===box.dataset.orderDate);
   if(!current)return;
-  const key=siteOrderKey(site,itemId);
+  const key=siteOrderKey(site,itemId,current.firstDate);
   recordOrderCheck(box,key,current.missing); // Rerender, but retain this row until the use date passes.
  }));
 }
@@ -1473,7 +1486,7 @@ function gwBoardMatchesSelection(item,group,finish,thickness){
  if(thickness&&itemThickness!==thickness)return false;
  return true;
 }
-function render(fast=false){updateFineJGuides();updateMetalSizeGuides();if(!fast){renderLadders();if(document.querySelector('[data-tab="inventoryAudit"]').classList.contains('active'))renderInventoryAudit();archiveExpiredWork();autoDeductOverdueReservations();renderReservedList();renderExpiredWorkHistory();renderPrepList();updatePrepTabAttention();renderSiteOrders();updateOrderTabAttention();renderOrders();renderCustomItems();prepareCustomCategoryOptions();}prepareFilters();updateGWBoardFacingOptions();updateSpecChoices();const group=$('categoryFilter').value,color=$('colorFilter').value,density=$('densityFilter').value;$('subMaterialWrap').hidden=group!=='副資材';const subMaterial=$('subMaterialFilter').value;const vinylColor=$('vinylColor').value,vinylSize=$('vinylSize').value;const isVinyl=group==='副資材'&&subMaterial==='ビニール粘着テープ';$('vinylColorWrap').hidden=!isVinyl;$('vinylSizeWrap').hidden=!isVinyl||!vinylColor;const nonAdhesiveFacing=$('nonAdhesiveFacing').value,nonAdhesiveColor=$('nonAdhesiveColor').value,nonAdhesiveSize=$('nonAdhesiveSize').value;const isNonAdhesive=group==='副資材'&&subMaterial==='非粘着テープ';$('nonAdhesiveFacingWrap').hidden=!isNonAdhesive;$('nonAdhesiveColorWrap').hidden=!isNonAdhesive||nonAdhesiveFacing!=='AG';$('nonAdhesiveSizeWrap').hidden=!isNonAdhesive||!nonAdhesiveFacing||(nonAdhesiveFacing==='AG'&&!nonAdhesiveColor);const adhesiveFacing=$('adhesiveFacing').value,adhesiveColor=$('adhesiveColor').value,adhesiveSize=$('adhesiveSize').value;const isAdhesive=group==='副資材'&&subMaterial==='粘着テープ';$('adhesiveFacingWrap').hidden=!isAdhesive;$('adhesiveColorWrap').hidden=!isAdhesive||adhesiveFacing!=='AG';$('adhesiveSizeWrap').hidden=!isAdhesive||!adhesiveFacing||(adhesiveFacing==='AG'&&!adhesiveColor);$('hachimakiFacingWrap').hidden=group!=='ハチマキ';$('hachimakiDensityWrap').hidden=group!=='ハチマキ'||!$('hachimakiFacing').value;const needGW=(group==='GW'||group==='RW'||group==='GW板');const needRW=group==='RW',needMesh=group==='金網（カラー金網）';const needDensity=(group==='ALK断熱マット'||group==='AG断熱マット'||group==='GW');$('densityFilterWrap').hidden=!needDensity;$('finishFilterWrap').hidden=!needGW||(group==='GW'&&!density);$('thicknessFilterWrap').hidden=!needGW||!$('finishFilter').value;$('meshColorWrap').hidden=!needMesh;$('meshGaugeWrap').hidden=!needMesh||!$('meshColor').value||$('meshColor').value==='金網';$('meshRollWrap').hidden=!needMesh||!$('meshColor').value||($('meshColor').value!=='金網'&&!$('meshGauge').value);const needColor=(group==='ジャケット'||(group==='エルボ'||group==='45°エルボ')||group==='コイル');$('colorFilterWrap').hidden=!needColor;$('coilThicknessWrap').hidden=group!=='コイル'||!color;const finish=$('finishFilter').value,thickness=$('thicknessFilter').value,meshColor=$('meshColor').value,meshGauge=$('meshGauge').value,meshRoll=$('meshRoll').value;const q=$('search').value.trim();const filtered=(!group||(group==='ハチマキ'&&(!$('hachimakiFacing').value||!$('hachimakiDensity').value))||(needColor&&!color)||(needDensity&&group!=='GW'&&!density) )?[]:data.items.filter(i=>!(group==='ハチマキ'&&String(i.spec||'').split('/').length!==3)&&!isLegacyPlainMesh(i)&&(group==='すべて'||materialGroup(i)===group)&&(group!=='ハチマキ'||(String(i.spec||'').split('/')[0].trim()===$('hachimakiFacing').value&&String(i.spec||'').split('/')[1].trim()===$('hachimakiDensity').value))&&(group!=='副資材'||!subMaterial||i.name===subMaterial)&&(group!=='副資材'||i.name!=='粘着テープ'||adhesiveMatches(i,adhesiveFacing,adhesiveColor,adhesiveSize))&&(group!=='副資材'||i.name!=='非粘着テープ'||nonAdhesiveMatches(i,nonAdhesiveFacing,nonAdhesiveColor,nonAdhesiveSize))&&(group!=='副資材'||i.name!=='ビニール粘着テープ'||vinylTapeMatches(i,vinylColor,vinylSize))&&(!needColor||!color||String(i.spec||'').split('/')[0].trim()===color)&&(group!=='コイル'||!$('coilThickness').value||String(i.spec||'').split('/')[1].trim()===$('coilThickness').value)&&(!needDensity||!density||String(i.spec||'').split('/')[0].trim()===density)&&(group!=='GW'||((!finish||String(i.spec||'').split('/')[1].trim()===finish)&&(!thickness||String(i.spec||'').split('/')[2].trim()===thickness)))&&(!needRW||((!finish||String(i.spec||'').split('/')[0].trim()===finish)&&(!thickness||String(i.spec||'').split('/')[1].trim()===thickness)))&&gwBoardMatchesSelection(i,group,finish,thickness)&&(!needMesh||(!meshColor||String(i.spec||'').split('/')[0].trim()===meshColor)&&(!meshGauge||meshColor==='金網'||String(i.spec||'').split('/')[1].trim()===meshGauge)&&(!meshRoll||String(i.spec||'').split('/').slice(-1)[0].trim()===meshRoll))&&(!q||((needColor||needDensity)?String(i.spec||'').split('/').slice(1).join('/').trim():(group==='副資材'?i.name+' / '+String(i.spec||'規格なし'):String(i.spec||'').trim()||i.name))===q));
+function render(fast=false){updateFineJGuides();updateMetalSizeGuides();if(!fast){renderLadders();if(document.querySelector('[data-tab="inventoryAudit"]').classList.contains('active'))renderInventoryAudit();archiveExpiredWork();autoDeductOverdueReservations();migrateDateOrderChecks();renderReservedList();renderExpiredWorkHistory();renderPrepList();updatePrepTabAttention();renderSiteOrders();updateOrderTabAttention();renderOrders();renderCustomItems();prepareCustomCategoryOptions();}prepareFilters();updateGWBoardFacingOptions();updateSpecChoices();const group=$('categoryFilter').value,color=$('colorFilter').value,density=$('densityFilter').value;$('subMaterialWrap').hidden=group!=='副資材';const subMaterial=$('subMaterialFilter').value;const vinylColor=$('vinylColor').value,vinylSize=$('vinylSize').value;const isVinyl=group==='副資材'&&subMaterial==='ビニール粘着テープ';$('vinylColorWrap').hidden=!isVinyl;$('vinylSizeWrap').hidden=!isVinyl||!vinylColor;const nonAdhesiveFacing=$('nonAdhesiveFacing').value,nonAdhesiveColor=$('nonAdhesiveColor').value,nonAdhesiveSize=$('nonAdhesiveSize').value;const isNonAdhesive=group==='副資材'&&subMaterial==='非粘着テープ';$('nonAdhesiveFacingWrap').hidden=!isNonAdhesive;$('nonAdhesiveColorWrap').hidden=!isNonAdhesive||nonAdhesiveFacing!=='AG';$('nonAdhesiveSizeWrap').hidden=!isNonAdhesive||!nonAdhesiveFacing||(nonAdhesiveFacing==='AG'&&!nonAdhesiveColor);const adhesiveFacing=$('adhesiveFacing').value,adhesiveColor=$('adhesiveColor').value,adhesiveSize=$('adhesiveSize').value;const isAdhesive=group==='副資材'&&subMaterial==='粘着テープ';$('adhesiveFacingWrap').hidden=!isAdhesive;$('adhesiveColorWrap').hidden=!isAdhesive||adhesiveFacing!=='AG';$('adhesiveSizeWrap').hidden=!isAdhesive||!adhesiveFacing||(adhesiveFacing==='AG'&&!adhesiveColor);$('hachimakiFacingWrap').hidden=group!=='ハチマキ';$('hachimakiDensityWrap').hidden=group!=='ハチマキ'||!$('hachimakiFacing').value;const needGW=(group==='GW'||group==='RW'||group==='GW板');const needRW=group==='RW',needMesh=group==='金網（カラー金網）';const needDensity=(group==='ALK断熱マット'||group==='AG断熱マット'||group==='GW');$('densityFilterWrap').hidden=!needDensity;$('finishFilterWrap').hidden=!needGW||(group==='GW'&&!density);$('thicknessFilterWrap').hidden=!needGW||!$('finishFilter').value;$('meshColorWrap').hidden=!needMesh;$('meshGaugeWrap').hidden=!needMesh||!$('meshColor').value||$('meshColor').value==='金網';$('meshRollWrap').hidden=!needMesh||!$('meshColor').value||($('meshColor').value!=='金網'&&!$('meshGauge').value);const needColor=(group==='ジャケット'||(group==='エルボ'||group==='45°エルボ')||group==='コイル');$('colorFilterWrap').hidden=!needColor;$('coilThicknessWrap').hidden=group!=='コイル'||!color;const finish=$('finishFilter').value,thickness=$('thicknessFilter').value,meshColor=$('meshColor').value,meshGauge=$('meshGauge').value,meshRoll=$('meshRoll').value;const q=$('search').value.trim();const filtered=(!group||(group==='ハチマキ'&&(!$('hachimakiFacing').value||!$('hachimakiDensity').value))||(needColor&&!color)||(needDensity&&group!=='GW'&&!density) )?[]:data.items.filter(i=>!(group==='ハチマキ'&&String(i.spec||'').split('/').length!==3)&&!isLegacyPlainMesh(i)&&(group==='すべて'||materialGroup(i)===group)&&(group!=='ハチマキ'||(String(i.spec||'').split('/')[0].trim()===$('hachimakiFacing').value&&String(i.spec||'').split('/')[1].trim()===$('hachimakiDensity').value))&&(group!=='副資材'||!subMaterial||i.name===subMaterial)&&(group!=='副資材'||i.name!=='粘着テープ'||adhesiveMatches(i,adhesiveFacing,adhesiveColor,adhesiveSize))&&(group!=='副資材'||i.name!=='非粘着テープ'||nonAdhesiveMatches(i,nonAdhesiveFacing,nonAdhesiveColor,nonAdhesiveSize))&&(group!=='副資材'||i.name!=='ビニール粘着テープ'||vinylTapeMatches(i,vinylColor,vinylSize))&&(!needColor||!color||String(i.spec||'').split('/')[0].trim()===color)&&(group!=='コイル'||!$('coilThickness').value||String(i.spec||'').split('/')[1].trim()===$('coilThickness').value)&&(!needDensity||!density||String(i.spec||'').split('/')[0].trim()===density)&&(group!=='GW'||((!finish||String(i.spec||'').split('/')[1].trim()===finish)&&(!thickness||String(i.spec||'').split('/')[2].trim()===thickness)))&&(!needRW||((!finish||String(i.spec||'').split('/')[0].trim()===finish)&&(!thickness||String(i.spec||'').split('/')[1].trim()===thickness)))&&gwBoardMatchesSelection(i,group,finish,thickness)&&(!needMesh||(!meshColor||String(i.spec||'').split('/')[0].trim()===meshColor)&&(!meshGauge||meshColor==='金網'||String(i.spec||'').split('/')[1].trim()===meshGauge)&&(!meshRoll||String(i.spec||'').split('/').slice(-1)[0].trim()===meshRoll))&&(!q||((needColor||needDensity)?String(i.spec||'').split('/').slice(1).join('/').trim():(group==='副資材'?i.name+' / '+String(i.spec||'規格なし'):String(i.spec||'').trim()||i.name))===q));
  if(group==='副資材')filtered.sort((a,b)=>SUB_MATERIAL_ORDER.indexOf(a.name)-SUB_MATERIAL_ORDER.indexOf(b.name));
  if(group==='RWP')filtered.sort(compareRWP);
  if(needDensity){filtered.sort((a,b)=>{const parse=i=>{const m=String(i.spec).match(/(\d+)(A|Φ)$/);return m?[m[2]==='A'?0:1,Number(m[1])]:[2,0]};const x=parse(a),y=parse(b);return x[0]-y[0]||x[1]-y[1]})}
@@ -1585,5 +1598,6 @@ $('search').addEventListener('change',render);$('addItem').addEventListener('cli
 $('saveMove').addEventListener('click',()=>{const i=data.items.find(x=>x.id===$('moveItem').value),type=$('moveType').value,qty=Number($('moveQty').value);if(!i){alert('先に品目を登録してください');return}if(!validQuantity(qty,i)){alert(allowsDecimal(i)?'数量は0.1刻みの正の数を入力してください':'数量は1以上の整数を入力してください');return}if(type==='out'&&qty>i.qty){alert(`在庫が足りません。現在庫：${i.qty}${i.unit}`);return}i.qty=Math.round((Number(i.qty)+(type==='in'?qty:-qty))*10)/10;data.history.push({time:Date.now(),type,itemId:i.id,name:i.name,qty,person:$('movePerson').value.trim(),note:$('moveNote').value.trim(),unit:i.unit});$('moveQty').value='';$('moveNote').value='';$('search').value='';save();showSelectedItem(i);document.querySelector('[data-tab="stock"]').click();const banner=$('reservationSuccess');banner.textContent='✓ '+(type==='in'?'入庫':'出庫')+'を登録しました：'+((i.name==='遮音シート'||i.name==='RW'||i.name==='GW')?stockDisplayName(i):i.name)+' / '+(i.spec||'規格なし')+'（'+qty+i.unit+'） 現在庫：'+i.qty+i.unit;banner.hidden=false;const target=[...document.querySelectorAll('[data-stock-item]')].find(el=>el.dataset.stockItem===i.id);if(target){document.querySelectorAll('.just-reserved').forEach(el=>el.classList.remove('just-reserved'));target.classList.add('just-reserved');requestAnimationFrame(()=>target.scrollIntoView({behavior:'auto',block:'center'}));}else{window.scrollTo(0,0)}});
 $('exportBtn').addEventListener('click',()=>{const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=BRANCHES[currentBranch].name+'_在庫管理バックアップ_'+new Date().toISOString().slice(0,10)+'.json';a.click();URL.revokeObjectURL(url)});$('importFile').addEventListener('change',async e=>{const f=e.target.files[0];if(!f)return;try{const x=JSON.parse(await f.text());normalizeInventoryData(x);ensure45ElbowItems(x);ensureFine45ElbowItems(x);ensureCeraCoverItems(x);ensurePefItems(x);ensureWaveRollItems(x);if(!confirm(BRANCHES[currentBranch].name+'のデータを読み込んだデータで置き換えます。よろしいですか？'))return;localStorage.setItem(KEY,JSON.stringify(x));data=x;closeOrderOverview();currentReservationBatchIds=[];lastReservedSite='';$('reserveContinue').hidden=true;$('reserveSpecialNotes').hidden=true;$('reserveSpecialMemo').value='';$('saveReservation').disabled=false;reserveParts=[];render();alert('読み込みました')}catch(err){alert('読み込めないファイルです')}e.target.value=''});$('clearHistory').addEventListener('click',()=>{if(confirm('履歴をすべて削除します。よろしいですか？')){data.history=[];save()}});render();if(!storageAvailable)alert('この開き方では端末への保存が使えない可能性があります。動作確認用としてお使いください。');
 </script></body></html>
+
 
 
