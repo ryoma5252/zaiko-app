@@ -637,6 +637,40 @@ ensureAllSmallJacketSizes(data);ensure45ElbowItems(data);ensureFine45ElbowItems(
 function migrateAlkMatName(branchData){
  if(!branchData||!Array.isArray(branchData.items))return;
  branchData.items.forEach(i=>{if(i.name==='断熱マット')i.name='ALK断熱マット';});
+ // Older catalog upgrades added the same mat again before renaming it.
+ const seen=new Map(),aliases=new Map(),duplicates=new Set();
+ for(const item of branchData.items){
+  if(!['ALK断熱マット','AG断熱マット'].includes(item.name))continue;
+  const spec=String(item.spec||'').split('/').map(x=>x.trim()).join(' / ');
+  if(!/^(24k|32k) \/ \d+(A|Φ)$/.test(spec))continue;
+  const key=item.name+'|'+spec;
+  if(!seen.has(key)){seen.set(key,item);continue}
+  const target=seen.get(key);
+  // Duplicate IDs cannot be safely combined; leave legacy records intact.
+  if(target.id===item.id)continue;
+  if(!Array.isArray(branchData.matDuplicateBackup))branchData.matDuplicateBackup=[];
+  branchData.matDuplicateBackup.push({targetId:target.id,target:{...target},duplicate:{...item}});
+  target.qty=Math.round((Number(target.qty||0)+Number(item.qty||0))*1000000)/1000000;
+  if(!target.place&&item.place)target.place=item.place;
+  if(target.min===''||target.min==null)target.min=item.min??'';
+  aliases.set(item.id,target.id);duplicates.add(item);
+ }
+ if(!duplicates.size)return;
+ branchData.items=branchData.items.filter(item=>!duplicates.has(item));
+ for(const rows of [branchData.reservations,branchData.history,Object.values(branchData.expiredWorkHistory||{})]){
+  for(const row of rows||[])if(aliases.has(row.itemId))row.itemId=aliases.get(row.itemId);
+ }
+ for(const field of ['orderedSiteItems','orderPersons']){
+  const records=branchData[field]||{};
+  for(const key of Object.keys(records)){
+   let parts;try{parts=JSON.parse(key)}catch(e){continue}
+   if(!Array.isArray(parts)||!aliases.has(parts[1]))continue;
+   parts[1]=aliases.get(parts[1]);const nextKey=JSON.stringify(parts),value=records[key];
+   if(field==='orderedSiteItems')records[nextKey]=Math.round(((Number(records[nextKey])||0)+(Number(value)||0))*1000000)/1000000;
+   else if(!records[nextKey])records[nextKey]=value;
+   delete records[key];
+  }
+ }
 }
 migrateAlkMatName(data);
 const branchCatalog=JSON.parse(JSON.stringify(data.items));
@@ -1597,7 +1631,7 @@ $('confirmSiteReservation').addEventListener('click',()=>{
 
 $('search').addEventListener('change',render);$('addItem').addEventListener('click',()=>{const name=$('itemName').value.trim(),qty=Number($('itemInitial').value),min=$('itemMin').value;if(!name){alert('品名を入力してください');return}if(!Number.isInteger(qty)||qty<0){alert('初期在庫数は0以上の整数を入力してください');return}if(min!==''&&(!Number.isInteger(Number(min))||Number(min)<0)){alert('在庫不足の目安は0以上の整数を入力してください');return}if(data.items.some(i=>i.name===name&&i.spec===$('itemSpec').value.trim())){alert('同じ品名・規格がすでに登録されています');return}const item={id:Date.now().toString()+Math.random().toString(16).slice(2),userCreated:true,name,spec:$('itemSpec').value.trim(),unit:$('itemUnit').value,place:$('itemPlace').value.trim(),qty,min};data.items.push(item);if(qty>0)data.history.push({time:Date.now(),type:'in',itemId:item.id,name:item.name,qty,person:'初期登録',note:'初期在庫',unit:item.unit});$('itemName').value='';$('itemSpec').value='';$('itemPlace').value='';$('itemInitial').value='0';$('itemMin').value='';save();alert('品目を登録しました')});
 $('saveMove').addEventListener('click',()=>{const i=data.items.find(x=>x.id===$('moveItem').value),type=$('moveType').value,qty=Number($('moveQty').value);if(!i){alert('先に品目を登録してください');return}if(!validQuantity(qty,i)){alert(allowsDecimal(i)?'数量は0.1刻みの正の数を入力してください':'数量は1以上の整数を入力してください');return}if(type==='out'&&qty>i.qty){alert(`在庫が足りません。現在庫：${i.qty}${i.unit}`);return}i.qty=Math.round((Number(i.qty)+(type==='in'?qty:-qty))*10)/10;data.history.push({time:Date.now(),type,itemId:i.id,name:i.name,qty,person:$('movePerson').value.trim(),note:$('moveNote').value.trim(),unit:i.unit});$('moveQty').value='';$('moveNote').value='';$('search').value='';save();showSelectedItem(i);document.querySelector('[data-tab="stock"]').click();const banner=$('reservationSuccess');banner.textContent='✓ '+(type==='in'?'入庫':'出庫')+'を登録しました：'+((i.name==='遮音シート'||i.name==='RW'||i.name==='GW')?stockDisplayName(i):i.name)+' / '+(i.spec||'規格なし')+'（'+qty+i.unit+'） 現在庫：'+i.qty+i.unit;banner.hidden=false;const target=[...document.querySelectorAll('[data-stock-item]')].find(el=>el.dataset.stockItem===i.id);if(target){document.querySelectorAll('.just-reserved').forEach(el=>el.classList.remove('just-reserved'));target.classList.add('just-reserved');requestAnimationFrame(()=>target.scrollIntoView({behavior:'auto',block:'center'}));}else{window.scrollTo(0,0)}});
-$('exportBtn').addEventListener('click',()=>{const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=BRANCHES[currentBranch].name+'_在庫管理バックアップ_'+new Date().toISOString().slice(0,10)+'.json';a.click();URL.revokeObjectURL(url)});$('importFile').addEventListener('change',async e=>{const f=e.target.files[0];if(!f)return;try{const x=JSON.parse(await f.text());normalizeInventoryData(x);ensure45ElbowItems(x);ensureFine45ElbowItems(x);ensureCeraCoverItems(x);ensurePefItems(x);ensureWaveRollItems(x);if(!confirm(BRANCHES[currentBranch].name+'のデータを読み込んだデータで置き換えます。よろしいですか？'))return;localStorage.setItem(KEY,JSON.stringify(x));data=x;closeOrderOverview();currentReservationBatchIds=[];lastReservedSite='';$('reserveContinue').hidden=true;$('reserveSpecialNotes').hidden=true;$('reserveSpecialMemo').value='';$('saveReservation').disabled=false;reserveParts=[];render();alert('読み込みました')}catch(err){alert('読み込めないファイルです')}e.target.value=''});$('clearHistory').addEventListener('click',()=>{if(confirm('履歴をすべて削除します。よろしいですか？')){data.history=[];save()}});render();if(!storageAvailable)alert('この開き方では端末への保存が使えない可能性があります。動作確認用としてお使いください。');
+$('exportBtn').addEventListener('click',()=>{const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=BRANCHES[currentBranch].name+'_在庫管理バックアップ_'+new Date().toISOString().slice(0,10)+'.json';a.click();URL.revokeObjectURL(url)});$('importFile').addEventListener('change',async e=>{const f=e.target.files[0];if(!f)return;try{const x=JSON.parse(await f.text());normalizeInventoryData(x);migrateAlkMatName(x);ensure45ElbowItems(x);ensureFine45ElbowItems(x);ensureCeraCoverItems(x);ensurePefItems(x);ensureWaveRollItems(x);if(!confirm(BRANCHES[currentBranch].name+'のデータを読み込んだデータで置き換えます。よろしいですか？'))return;localStorage.setItem(KEY,JSON.stringify(x));data=x;closeOrderOverview();currentReservationBatchIds=[];lastReservedSite='';$('reserveContinue').hidden=true;$('reserveSpecialNotes').hidden=true;$('reserveSpecialMemo').value='';$('saveReservation').disabled=false;reserveParts=[];render();alert('読み込みました')}catch(err){alert('読み込めないファイルです')}e.target.value=''});$('clearHistory').addEventListener('click',()=>{if(confirm('履歴をすべて削除します。よろしいですか？')){data.history=[];save()}});render();if(!storageAvailable)alert('この開き方では端末への保存が使えない可能性があります。動作確認用としてお使いください。');
 </script></body></html>
 
 
