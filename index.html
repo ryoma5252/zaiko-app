@@ -1268,8 +1268,11 @@ function autoDeductOverdueReservations(){
  for(const r of [...(data.reservations||[])].sort((a,b)=>String(a.date).localeCompare(String(b.date))||String(a.id).localeCompare(String(b.id)))){
   if(!isPastReservation(r)||isLoaded(r))continue;
   const item=data.items.find(i=>i.id===r.itemId);
-  const qty=Number(r.qty||0),deducted=item?roundQuantity(Math.min(Math.max(0,Number(item.qty)||0),Math.max(0,qty))):0;
+  const qty=Number(r.qty||0);
   const allocation=data.expiredWorkHistory?.[r.id];
+  // The archived reservation allocation is the warehouse portion; ordered goods never affect stock.
+  const reservedStock=Math.max(0,Number(allocation?.stock)||0);
+  const deducted=item?roundQuantity(Math.min(Math.max(0,Number(item.qty)||0),reservedStock)):0;
   if(item&&Number.isFinite(qty)&&qty>0){
    item.qty=Math.round(Math.max(0,Number(item.qty||0)-deducted)*1000000)/1000000;
    data.history.push({type:'out',itemId:item.id,name:item.name,spec:item.spec,unit:item.unit,qty:deducted,requestedQty:qty,time:new Date().toISOString(),person:'自動処理',note:'使用日の翌日以降：未積載確認の予約を自動出庫（'+(r.place||'現場未入力')+'）'});
@@ -1382,7 +1385,8 @@ function renderPrepList(){
    for(const r of pending){
     const item=data.items.find(i=>i.id===r.itemId);
     const qty=Number(r.qty||0),stock=item?Number(item.qty||0):0;
-    const deducted=item?Math.max(0,Math.min(stock,qty)):0;
+    const reservedStock=Math.max(0,Number(loadAllocation[r.id]?.stock)||0);
+    const deducted=item?roundQuantity(Math.min(Math.max(0,stock),reservedStock)):0;
     if(item)item.qty=Math.round(Math.max(0,stock-deducted)*1000000)/1000000;
     data.loadedReservations[r.id]={at:new Date().toISOString(),qty,deducted,allocation:loadAllocation[r.id]};
    }
